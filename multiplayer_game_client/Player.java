@@ -10,8 +10,8 @@ public class Player extends LocalActor {
     
     private int shotCooldown = 0;
     
-    public Player(String id) {
-        super(id);
+    public Player(String clientId) {
+        super(clientId, clientId);
     }
     
     public void act() {
@@ -35,7 +35,7 @@ public class Player extends LocalActor {
     }
     
     public void fireShot() {
-        Shot shot = new Shot();
+        Shot shot = new Shot(getClientId());
         getWorld().addObject(shot, getX(), getY());
         shot.setRotation(getRotation());
     }

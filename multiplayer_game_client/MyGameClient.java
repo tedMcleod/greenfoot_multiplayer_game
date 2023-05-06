@@ -47,6 +47,10 @@ public class MyGameClient extends GameClient  {
             if (op != null) {
                 gw.removeObject(op);
             }
+            for (GameActor ga : gw.getClientActors(id)) {
+                gw.removeObject(ga);
+            }
+            
         } else if (cmd.equals("MOVE")) {
             String targetId = scan.next();
             GameActor ga = gw.getGameActor(targetId);
@@ -69,9 +73,8 @@ public class MyGameClient extends GameClient  {
                 ga.destroy();
             }
         } else if (cmd.equals("ADDOS")) {
-            System.out.println("adding shot: " + command);
             String shotId = scan.next();
-            OtherShot os = new OtherShot(shotId);
+            OtherShot os = new OtherShot(shotId, id);
             int x = scan.nextInt();
             int y = scan.nextInt();
             gw.addObject(os, x, y);

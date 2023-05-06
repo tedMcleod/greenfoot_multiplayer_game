@@ -3,8 +3,8 @@ import java.util.UUID;
 
 public class Shot extends LocalActor {
     
-    public Shot() {
-        super(UUID.randomUUID().toString());
+    public Shot(String clientId) {
+        super(UUID.randomUUID().toString(), clientId);
     }
     
     @Override

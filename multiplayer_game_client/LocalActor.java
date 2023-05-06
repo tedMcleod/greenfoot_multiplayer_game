@@ -8,8 +8,8 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public abstract class LocalActor extends GameActor {
     
-    public LocalActor(String id) {
-        super(id);
+    public LocalActor(String id, String clientId) {
+        super(id, clientId);
     }
     
     @Override
