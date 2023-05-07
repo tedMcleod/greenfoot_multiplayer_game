@@ -35,8 +35,10 @@ public abstract class GameClient implements Runnable {
     
     public synchronized void sendMessage(String message) {
         try {
-            PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-            out.println(message);
+            if (sock != null) {
+                PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+                out.println(message);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
