@@ -16,6 +16,7 @@ public class TextField extends Text {
     private boolean isSelected;
     private int width;
     private TextValidator validator;
+    private boolean hasTyped = false;
 
     public TextField() {
         this(100);
@@ -30,14 +31,18 @@ public class TextField extends Text {
 
     public void act() {
         if (Greenfoot.mouseClicked(this)) {
-            setSelected(!isSelected);
-            if (isSelected) {
-                for(TextField field : getWorld().getObjects(TextField.class)) {
-                    if (field != this) field.setSelected(false);
-                }
-                Greenfoot.getKey(); // toss out keys press before selection
+            if (!isSelected) Greenfoot.getKey(); // toss out keys pressed before selection
+            setSelected(true);
+            for(TextField field : getWorld().getObjects(TextField.class)) {
+                if (field != this) field.setSelected(false);
             }
-
+        } else {
+            MouseInfo mi = Greenfoot.getMouseInfo();
+            if (mi != null) {
+                if (mi.getClickCount() > 0) {
+                    setSelected(false);
+                }
+            }
         }
         if (isSelected) {
             String key = Greenfoot.getKey();
@@ -51,8 +56,12 @@ public class TextField extends Text {
                         paste();
                     }
                 } else if (key.length() == 1) {
-                    String str = getText() + key;
-                    if (validator.isValid(str)) setText(str);
+                    boolean clearText = !hasTyped;
+                    String str = clearText ? key : getText() + key;
+                    if (validator.isValid(str)) {
+                        hasTyped = true;
+                        setText(str);
+                    }
                 }
             }
         }
@@ -67,7 +76,7 @@ public class TextField extends Text {
                 str += (char)next;
                 next = reader.read();
             }
-            str = getText() + str;
+            str = hasTyped ? getText() + str : str;
             if (validator.isValid(str)) setText(str);
         }
         catch (UnsupportedFlavorException | IOException err) {

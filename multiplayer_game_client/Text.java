@@ -206,135 +206,9 @@ public class Text extends Actor {
      * @param foreground the foreground color (text color - null means black)
      * @param background the background color (null means clear)
      * @param outline outline color (null means no outline)
-     * @param align the alignment of the text. valid values are: ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
+     * @param align the alignment of the text. valid values are: Text.ALIGN_CENTER, Text.ALIGN_LEFT, Text.ALIGN_RIGHT
      */
     public Text(String text, int size, Color foreground, Color background, Color outline, int align) {
-        setText(text, size, foreground, background, outline, align);
-    }
-    
-    /**
-     * Creates a Text object that with the given number, size, foreground color, background color, outline color, and alignment.
-     * @param num the number to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     * @param outline outline color (null means no outline)
-     * @param align the alignment of the text. valid values are: ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
-     */
-    public Text(Number num, int size, Color foreground, Color background, Color outline, int align) {
-        setText(num.toString(), size, foreground, background, outline, align);
-    }
-
-    /**
-     * Sets the text to the given text.
-     * @param text the text to display 
-     */
-    public void setText(String text) {
-        setText(text, getSize());
-    }
-    
-    /**
-     * Sets the text to the given number.
-     * @param num the number to display 
-     */
-    public void setText(Number num) {
-        setText(num.toString(), getSize());
-    }
-
-    /**
-     * Sets the text to the given text with the given font size.
-     * @param text the text to display
-     * @param size the font size of the text
-     */
-    public void setText(String text, int size) {
-        setText(text, size, getForeground());
-    }
-    
-    /**
-     * Sets the text to the given number with the given font size.
-     * @param num the number to display
-     * @param size the font size of the text
-     */
-    public void setText(Number num, int size) {
-        setText(num.toString(), size, getForeground());
-    }
-
-    /**
-     * Sets the text to the given text with the given font size and foregound color.
-     * @param text the text to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     */
-    public void setText(String text, int size, Color foreground) {
-        setText(text, size, foreground, getBackground());
-    }
-    
-    /**
-     * Sets the text to the given number with the given font size and foregound color.
-     * @param num the number to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     */
-    public void setText(Number num, int size, Color foreground) {
-        setText(num.toString(), size, foreground, getBackground());
-    }
-
-    /**
-     * Sets the text to the given text with the given font size, foregound color, and background color.
-     * @param text the text to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     */
-    public void setText(String text, int size, Color foreground, Color background) {
-        setText(text, size, foreground, background, getOutline());
-    }
-    
-    /**
-     * Sets the text to the given number with the given font size, foregound color, and background color.
-     * @param num the number to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     */
-    public void setText(Number num, int size, Color foreground, Color background) {
-        setText(num.toString(), size, foreground, background, getOutline());
-    }
-
-    /**
-     * Sets the text to the given text with the given font size, foregound color, background color, and outline color.
-     * @param text the text to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     * @param outline outline color (null means no outline)
-     */
-    public void setText(String text, int size, Color foreground, Color background, Color outline) {
-        setText(text, size, foreground, background, outline, getAlign());
-    }
-    
-    /**
-     * Sets the text to the given number with the given font size, foregound color, background color, and outline color.
-     * @param num the number to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     * @param outline outline color (null means no outline)
-     */
-    public void setText(Number num, int size, Color foreground, Color background, Color outline) {
-        setText(num.toString(), size, foreground, background, outline, getAlign());
-    }
-
-    /**
-     * Sets the text, size, foreground color, background color, outline color, and alignment.
-     * @param text the text to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     * @param outline outline color (null means no outline)
-     * @param align the alignment of the text. valid values are: ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
-     */
-    public void setText(String text, int size, Color foreground, Color background, Color outline, int align) {
         this.text = text;
         this.size = size;
         if (foreground == null) foreground = Color.BLACK;
@@ -344,6 +218,36 @@ public class Text extends Actor {
         this.outline = outline;
         setAlign(align); // must use setter here to validate value
         updateImage();
+    }
+    
+    /**
+     * Creates a Text object that with the given number, size, foreground color, background color, outline color, and alignment.
+     * @param num the number to display
+     * @param size the font size of the text
+     * @param foreground the foreground color (text color - null means black)
+     * @param background the background color (null means clear)
+     * @param outline outline color (null means no outline)
+     * @param align the alignment of the text. valid values are: Text.ALIGN_CENTER, Text.ALIGN_LEFT, Text.ALIGN_RIGHT
+     */
+    public Text(Number num, int size, Color foreground, Color background, Color outline, int align) {
+        this(num.toString(), size, foreground, background, outline, align);
+    }
+
+    /**
+     * Sets the text to the given text.
+     * @param text the text to display 
+     */
+    public void setText(String text) {
+        this.text = text;
+        updateImage();
+    }
+    
+    /**
+     * Sets the text to the given number.
+     * @param num the number to display 
+     */
+    public void setText(Number num) {
+        setText(num.toString());
     }
     
     protected void updateImage() {
@@ -359,19 +263,6 @@ public class Text extends Actor {
             img.setTransparency(getImage().getTransparency());
         }
         setImage(img);
-    }
-    
-    /**
-     * Sets the number, size, foreground color, background color, outline color, and alignment.
-     * @param num the number to display
-     * @param size the font size of the text
-     * @param foreground the foreground color (text color - null means black)
-     * @param background the background color (null means clear)
-     * @param outline outline color (null means no outline)
-     * @param align the alignment of the text. valid values are: ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
-     */
-    public void setText(Number num, int size, Color foreground, Color background, Color outline, int align) {
-        setText(num.toString(), size, foreground, background, outline, align);
     }
 
     /**
@@ -401,7 +292,7 @@ public class Text extends Actor {
 
     /**
      * Sets the alignment.
-     * @param align the alignment of the text. valid values are: ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
+     * @param align the alignment of the text. valid values are: Text.ALIGN_CENTER, Text.ALIGN_LEFT, Text.ALIGN_RIGHT
      */
     public void setAlign(int align) {
         if (align != ALIGN_LEFT && align != ALIGN_RIGHT && align != ALIGN_CENTER) {
@@ -459,7 +350,7 @@ public class Text extends Actor {
      */
     public void setSize(int size) {
         this.size = size;
-        setText(getText());
+        updateImage();
     }
 
     /**
@@ -476,7 +367,7 @@ public class Text extends Actor {
      */
     public void setForeground(Color foreground) {
         this.foreground = foreground != null ? foreground : Color.BLACK;
-        setText(getText());
+        updateImage();
     }
 
     /**
@@ -493,7 +384,7 @@ public class Text extends Actor {
      */
     public void setBackground(Color background) {
         this.background = background != null ? background : new Color(0, 0, 0, 0);
-        setText(getText());
+        updateImage();
     }
 
     /**
@@ -510,7 +401,7 @@ public class Text extends Actor {
      */
     public void setOutline(Color outline) {
         this.outline = outline;
-        setText(getText());
+        updateImage();
     }
 
     /**

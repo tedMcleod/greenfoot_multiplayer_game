@@ -59,7 +59,7 @@ public class TitleWorld extends World {
     
     public int getPort() {
         try {
-            return Integer.parseInt(portField.getText());
+            return portField.getIntVal();
         } catch (NumberFormatException err) {
             return 0;
         }
