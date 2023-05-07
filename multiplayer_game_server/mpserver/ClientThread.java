@@ -42,7 +42,6 @@ public class ClientThread implements Runnable {
                         break;
                     } else {
                         server.broadcast(id + " " + cmd, id);
-                        System.out.println("broadcast: " + id + " " + cmd);
                     }
                 } catch (Exception err) {
                     err.printStackTrace();

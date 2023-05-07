@@ -16,7 +16,6 @@ public class MyGameClient extends GameClient  {
 
     @Override
     public void doCommand(String command) {
-        System.out.println("Command: " + command);
         GameWorld gw = (GameWorld)getWorld();
         Scanner scan = new Scanner(command);
         String id = scan.next();

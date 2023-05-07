@@ -41,6 +41,11 @@ public abstract class GameClient implements Runnable {
             e.printStackTrace();
         }
     }
+    
+    public void start() {
+        Thread clientThread = new Thread(this);
+        clientThread.start();
+    }
 
     @Override
     public void run() {

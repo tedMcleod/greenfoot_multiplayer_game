@@ -15,8 +15,9 @@ public class StartButton extends Actor {
     
     public void act() {
         if (Greenfoot.mouseClicked(this)) {
-            // create a MyGameClient and set the world to this world
             GameWorld gw = new MyGameWorld();
+            gw.setClient(new MyGameClient("localhost", 1234));
+            gw.getClient().start();
             Greenfoot.setWorld(gw);
         }
     }

@@ -3,19 +3,20 @@ import java.util.List;
 import java.util.ArrayList;
 
 public abstract class GameWorld extends World {
-    MyGameClient client;
+    GameClient client;
 
     public GameWorld(int width, int height, int cellSize, boolean bounded) {    
         // Create a new world with 600x400 cells with a cell size of 1x1 pixels.
         super(width, height, cellSize, bounded);
-        client = new MyGameClient("localhost", 1234);
-        client.setWorld(this);
-        Thread clientThread = new Thread(client);
-        clientThread.start();
         setPaintOrder(Player.class, OtherPlayer.class, Shot.class, OtherShot.class);
     }
+    
+    public void setClient(GameClient client) {
+        this.client = client;
+        client.setWorld(this);
+    }
 
-    public MyGameClient getClient() {
+    public GameClient getClient() {
         return client;
     }
 
@@ -48,7 +49,7 @@ public abstract class GameWorld extends World {
     @Override
     public void started() {
         GameClient client = getClient();
-        if (!client.getConnected().get()) {
+        if (client == null || !client.getConnected().get()) {
             Greenfoot.setWorld(new TitleWorld());
         }
     }
