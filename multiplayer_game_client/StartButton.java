@@ -15,8 +15,11 @@ public class StartButton extends Actor {
     
     public void act() {
         if (Greenfoot.mouseClicked(this)) {
+            TitleWorld tw = (TitleWorld)getWorld();
+            TitleWorld.lastAddress = tw.getAddress();
+            TitleWorld.lastPort = "" + tw.getPort();
             GameWorld gw = new MyGameWorld();
-            gw.setClient(new MyGameClient("localhost", 1234));
+            gw.setClient(new MyGameClient(tw.getAddress(), tw.getPort()));
             gw.getClient().start();
             Greenfoot.setWorld(gw);
         }
