@@ -2,16 +2,16 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 
 public abstract class GameActor extends Actor {
     
-    private String id;
+    private String actorId;
     private String clientId;
     
-    public GameActor(String id, String clientId) {
-        this.id = id;
+    public GameActor(String actorId, String clientId) {
+        this.actorId = actorId;
         this.clientId = clientId;
     }
     
-    public String getId() {
-        return id;
+    public String getActorId() {
+        return actorId;
     }
     
     public String getClientId() {
@@ -26,8 +26,8 @@ public abstract class GameActor extends Actor {
         GameWorld gw = getWorldOfType(GameWorld.class);
         if (gw != null) {
             onDestroy(gw);
-            if (gw.getClient() != null && gw.getClient().getConnected().get()) {
-                gw.getClient().sendMessage("DESTROY " + getId());
+            if (gw.getClient() != null && gw.getClient().isConnected()) {
+                gw.getClient().broadcastMessage("DESTROY " + getActorId());
             }
         }
     }

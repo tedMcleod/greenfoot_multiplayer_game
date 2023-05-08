@@ -37,6 +37,7 @@ public class ClientThread implements Runnable {
                     if (first.equals("TO")) {
                         String toId = reader.next();
                         String restOfCmd = reader.nextLine();
+                        System.out.println("sending message " + id + restOfCmd + " to " + toId);
                         server.sendMessage(id + restOfCmd, toId);
                     } else if (first.equals("DC")) {
                         break;

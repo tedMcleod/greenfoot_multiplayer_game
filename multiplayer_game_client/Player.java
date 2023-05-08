@@ -11,7 +11,8 @@ public class Player extends LocalActor {
     private int shotCooldown = 0;
     
     public Player(String clientId) {
-        super(clientId, clientId);
+        super(clientId);
+        setOtherClass(OtherPlayer.class);
     }
     
     public void act() {

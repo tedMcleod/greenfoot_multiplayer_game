@@ -1,17 +1,10 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
-import java.util.UUID;
 
 public class Shot extends LocalActor {
     
     public Shot(String clientId) {
-        super(UUID.randomUUID().toString(), clientId);
-    }
-    
-    @Override
-    public void addedToWorld(World world) {
-        if (getWorldOfType(GameWorld.class).getClient() != null) {
-            getWorldOfType(GameWorld.class).getClient().sendMessage("ADDOS " + getId() + " " + getX() + " " + getY());
-        }
+        super(clientId);
+        setOtherClass(OtherShot.class);
     }
     
     public void act() {

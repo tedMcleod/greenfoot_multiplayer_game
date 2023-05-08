@@ -8,7 +8,7 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public class OtherPlayer extends GameActor {
     
-    public OtherPlayer(String clientId) {
-        super(clientId, clientId);
+    public OtherPlayer(String id, String clientId) {
+        super(id, clientId);
     }
 }
