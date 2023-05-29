@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 /**
  * Each client that connects to the server is given its own thread that runs the code in run().
@@ -40,6 +41,24 @@ public class ClientThread implements Runnable {
                         server.sendMessage(id + restOfCmd, toId);
                     } else if (first.equals("DC")) {
                         break;
+                    } else if (first.equals("TO_ROOM")) {
+                        String roomId = reader.next();
+                        String restOfCmd = reader.nextLine();
+                        server.roomBroadcast(id + restOfCmd, roomId, id);
+                    } else if (first.equals("ADD_ROOM")) {
+                        String roomName = reader.next();
+                        int roomCapacity = reader.nextInt();
+                        server.addRoom(roomName, roomCapacity);
+                    } else if (first.equals("REMOVE_ROOM")) {
+                        String roomId = reader.next();
+                        server.removeRoom(roomId);
+                    } else if (first.equals("JOIN_ROOM")) {
+                        String roomId = reader.next();
+                        server.joinRoom(id, roomId);
+                    } else if (first.equals("LEAVE_ROOM")) {
+                        server.leaveRoom(id);
+                    } else if (first.equals("GET_ROOMS")) {
+                        server.sendRoomsInfo(id);
                     } else {
                         server.broadcast(id + " " + cmd, id);
                     }
@@ -49,12 +68,10 @@ public class ClientThread implements Runnable {
                 inputLine = in.readLine();
             }
             csocket.close();
-            server.getActiveClients().remove(id);
-            server.broadcast(id + " DC");
         } catch (IOException e) {
-            server.getActiveClients().remove(id);
-            server.broadcast(id + " DC");
-            System.out.println(e);
+            System.out.println("Client " + id + " socket close IOException: " + e);
+        } finally {
+            server.removeClient(id);
         }
     }
 }

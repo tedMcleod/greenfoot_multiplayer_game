@@ -57,6 +57,7 @@ public class TextField extends Text {
                     }
                 } else if (key.length() == 1) {
                     boolean clearText = !hasTyped;
+                    if (Greenfoot.isKeyDown("shift")) key = key.toUpperCase();
                     String str = clearText ? key : getText() + key;
                     if (validator.isValid(str)) {
                         hasTyped = true;

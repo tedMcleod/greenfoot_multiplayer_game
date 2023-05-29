@@ -3,20 +3,22 @@ import java.util.List;
 import java.util.ArrayList;
 
 public abstract class GameWorld extends World {
-    GreenfootClient client;
+    JavaFXClient client;
 
     public GameWorld(int width, int height, int cellSize, boolean bounded) {    
         // Create a new world with 600x400 cells with a cell size of 1x1 pixels.
         super(width, height, cellSize, bounded);
-        setPaintOrder(Player.class, OtherPlayer.class, Shot.class, OtherShot.class);
     }
     
-    public void setClient(GreenfootClient client) {
+    public void setClient(JavaFXClient client) {
         this.client = client;
-        client.setWorld(this);
+        GreenfootEventHandler eh = (GreenfootEventHandler)client.getEventHandler();
+        if (eh != null) {
+            eh.setWorld(this);
+        }
     }
 
-    public GameClient getClient() {
+    public JavaFXClient getClient() {
         return client;
     }
 
@@ -32,7 +34,7 @@ public abstract class GameWorld extends World {
     public List<GameActor> getClientActors(String clientId) {
         List<GameActor> clientActors = new ArrayList<>();
         for (GameActor ga : getObjects(GameActor.class)) {
-            if (ga.getClientId().equals(clientId)) {
+            if (ga.getClientId().equals(clientId)) {//
                 clientActors.add(ga);
             }
         }
@@ -42,13 +44,5 @@ public abstract class GameWorld extends World {
     @Override
     public void stopped() {
         client.disconnect();
-    }
-
-    @Override
-    public void started() {
-        GameClient client = getClient();
-        if (client == null || !client.isConnected()) {
-            Greenfoot.setWorld(new TitleWorld());
-        }
     }
 }
