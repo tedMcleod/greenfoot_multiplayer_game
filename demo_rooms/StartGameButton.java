@@ -19,7 +19,7 @@ public class StartGameButton extends Button {
     }
 
     @Override
-    public void onClick() {
+    public synchronized void onClick() {
         GameWorld gw = getWorldOfType(GameWorld.class);
         if (gw != null) {
             gw.getClient().broadcastMessageToRoom("START_GAME", room.getId());

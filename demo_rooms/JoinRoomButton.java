@@ -19,7 +19,7 @@ public class JoinRoomButton extends Button {
     }
     
     @Override
-    public void onClick() {
+    public synchronized void onClick() {
         LobbyWorld lw = (LobbyWorld)getWorld();
         RoomWorld rw = new RoomWorld(room);
         lw.getClient().setEventHandler(new RoomEventHandler(rw, room));

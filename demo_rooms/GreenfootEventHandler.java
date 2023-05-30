@@ -201,6 +201,16 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
         }
     }
     
+    /**
+     * This method is called when this client is disconnected from the server.
+     * Subclasses should override this method to take actions after the client
+     * has been disconnected.
+     */
+    @Override
+    public void onDisconnected(GameClient client) {
+        Greenfoot.stop();
+    }
+    
     protected void handleDestroyCmd(String actorId) {
         GameActor ga = getWorld().getGameActor(actorId);
         if (ga != null) ga.destroy();

@@ -19,10 +19,22 @@ public class LeaveRoomButton extends Button {
     }
 
     @Override
-    public void onClick() {
-        GameWorld gw = getWorldOfType(GameWorld.class);
-        if (gw != null) {
-            gw.getClient().broadcastMessage("LEAVE_ROOM " + room.getId());
+    public synchronized void onClick() {
+        RoomWorld rw = getWorldOfType(RoomWorld.class);
+        if (rw != null) {
+            System.out.println("leaving room and going to lobby");
+            LobbyWorld lw = new LobbyWorld();
+            System.out.println("Created LobbyWorld");
+            
+            rw.getClient().setEventHandler(new LobbyEventHandler(lw));
+            System.out.println("setEventHandler done");
+            lw.setClient(rw.getClient());
+            System.out.println("setClient done");
+            lw.setNeedsUpdate();
+            Greenfoot.setWorld(lw);
+            System.out.println("set world done");
+            lw.getClient().broadcastMessage("LEAVE_ROOM " + room.getId());
+            
         }
     }
 }

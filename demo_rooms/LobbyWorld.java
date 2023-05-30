@@ -9,6 +9,8 @@ import java.util.Set;
  * @version (a version number or a date)
  */
 public class LobbyWorld extends GameWorld {
+    
+    private boolean needsUpdate = true;
 
     public LobbyWorld() {
         super(600, 400, 1, false);
@@ -44,7 +46,7 @@ public class LobbyWorld extends GameWorld {
         }
     }
     
-    public void addRoom(RoomInfo room) {
+    private void addRoom(RoomInfo room) {
         JoinRoomButton btn = new JoinRoomButton(room);
         List<JoinRoomButton> buttons = getObjects(JoinRoomButton.class);
         int bh = btn.getImage().getHeight();
@@ -52,5 +54,17 @@ public class LobbyWorld extends GameWorld {
         int x = getWidth() / 2;
         int y = bh / 2 + buttons.size() * bh;
         addObject(btn, x, y);
+    }
+    
+    public void setNeedsUpdate() {
+        needsUpdate = true;
+    }
+    
+    @Override
+    public void act() {
+        if (needsUpdate) {
+            needsUpdate = false;
+            getClient().getRooms();
+        }
     }
 }

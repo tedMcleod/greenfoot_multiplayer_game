@@ -1,4 +1,5 @@
 import java.util.Set;
+import greenfoot.Greenfoot;
 
 /**
  * Write a description of class TankGameClient here.
@@ -13,29 +14,9 @@ public class LobbyEventHandler extends GreenfootEventHandler {
     }
     
     @Override
-    public void setWorld(GameWorld world) {
-        super.setWorld(world);
-        world.getClient().getRooms();
-    }
-    
-    @Override
     public void onIdAssigned(String clientId, GameClient client) {
-        client.getRooms();
-    }
-    
-    @Override
-    public void handleCommand(String command, GameClient client) {
-        super.handleCommand(command, client);
-    }
-    
-    /**
-     * This method is called when this client is disconnected from the server.
-     * Subclasses should override this method to take actions after the client
-     * has been disconnected.
-     */
-    @Override
-    public void onDisconnected(GameClient client) {
-        System.out.println("Disconnected in Lobby Event Handler");
+        LobbyWorld lw = (LobbyWorld)getWorld();
+        lw.setNeedsUpdate();
     }
 
     @Override
@@ -46,14 +27,28 @@ public class LobbyEventHandler extends GreenfootEventHandler {
 
     @Override
     public void handleRoomAdded(RoomInfo room, GameClient client) {
-        LobbyWorld lw = (LobbyWorld)getWorld();
-        lw.addRoom(room);
+        client.getRooms();
     }
 
     @Override
     public void handleRoomRemoved(String roomId, GameClient client) {
-        // nothing for now
-    }    
+        client.getRooms();
+    }
+    
+    @Override
+    public void handleClientJoinedRoom(String clientId, String roomId, GameClient client) {
+        client.getRooms();
+    }
+    
+    @Override
+    public void handleJoinRoomFailed(String reason, String roomId, GameClient client) {
+        System.out.println("Failed to join room " + roomId + " because " + reason);
+    }
+    
+    @Override
+    public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
+        client.getRooms();
+    }
     
 }
 

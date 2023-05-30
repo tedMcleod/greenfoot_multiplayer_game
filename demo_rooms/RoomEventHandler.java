@@ -45,6 +45,7 @@ public class RoomEventHandler extends GreenfootEventHandler {
     protected void handleUserNameCmd(String clientId, String name) {
         System.out.println("username being added for " + name);
         RoomWorld roomWorld = (RoomWorld)getWorld();
+        room.addMember(clientId);
         roomWorld.setUserName(clientId, name);
     }
     
@@ -91,12 +92,17 @@ public class RoomEventHandler extends GreenfootEventHandler {
             RoomWorld roomWorld = (RoomWorld)getWorld();
             roomWorld.updateUserLabels();
             if (clientId.equals(client.getId())) {
-                System.out.println("leaving room and going to lobby");
-                LobbyWorld lw = new LobbyWorld();
-                System.out.println("client == roomWorld.getClient() -> " + (client == roomWorld.getClient()));
-                client.setEventHandler(new LobbyEventHandler(lw));
-                lw.setClient(roomWorld.getClient());
-                Greenfoot.setWorld(lw);
+                // System.out.println("leaving room and going to lobby");
+                // LobbyWorld lw = new LobbyWorld();
+                // System.out.println("Created LobbyWorld");
+                
+                // roomWorld.getClient().setEventHandler(new LobbyEventHandler(lw));
+                // System.out.println("setEventHandler done");
+                // lw.setClient(roomWorld.getClient());
+                // System.out.println("setClient done");
+                // lw.setNeedsUpdate();
+                // Greenfoot.setWorld(lw);
+                // System.out.println("set world done");
             }
         }
     }

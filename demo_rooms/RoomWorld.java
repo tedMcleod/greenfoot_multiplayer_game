@@ -62,7 +62,7 @@ public class RoomWorld extends GameWorld {
     }
     
     public void startGame() {
-        BattleMapWorld bw = new BattleMapWorld(1, room, userNamesById);
+        BattleMapWorld bw = new BattleMapWorld(1, room, userNamesById, getClient().getId());
         getClient().setEventHandler(new BattleMapEventHandler(bw, room));
         bw.setClient(getClient());
         Greenfoot.setWorld(bw);

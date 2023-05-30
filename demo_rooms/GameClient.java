@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
-import javafx.application.Platform;
-
 /**
  * THIS IS NOT ACCURATE ANYMORE SINCE THERE ARE EVENT HANDLERS
  * The GameClient class controls the client's connection to the server. It handles writing and reading data
@@ -53,7 +51,7 @@ public class GameClient implements Runnable {
     private int portNumber;
     private Socket sock;
     private String id;
-    private boolean isConnected;
+    private volatile boolean isConnected;
     private ClientEventHandler eventHandler;
 
     /**
@@ -184,7 +182,7 @@ public class GameClient implements Runnable {
         }
     }
 
-    protected void processCommand(String cmd) {
+    protected synchronized void processCommand(String cmd) {
         System.out.println("process command: " + cmd);
         try (Scanner reader = new Scanner(cmd)) {
             // every message starts with the clientId of the sender except server messages
@@ -249,7 +247,7 @@ public class GameClient implements Runnable {
      * set the id of this client. This should only be called internally to set
      * the id to the id assigned by the server.
      */
-    private void setId(String id) {
+    private synchronized void setId(String id) {
         this.id = id;
         if(eventHandler != null) eventHandler.onIdAssigned(id, this);
         broadcastMessage(CMD_JOINED);
@@ -290,9 +288,9 @@ public class GameClient implements Runnable {
      * sets the connection status of this client to the server.
      * @param connected whether this client is connected to the server
      */
-    private void setIsConnected(boolean connected) {
+    private synchronized void setIsConnected(boolean connected) {
         isConnected = connected;
-        if(!isConnected && eventHandler != null) eventHandler.onDisconnected(this);
+        if(!isConnected && eventHandler != null)  eventHandler.onDisconnected(this);
     }
 
     public void setEventHandler(ClientEventHandler eventHandler) {

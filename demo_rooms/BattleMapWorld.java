@@ -35,14 +35,11 @@ public class BattleMapWorld extends LevelWorld {
     // loads the level given. For example, if level was 3, it would load the third txt file in the levels folder
     // You can add parameters to this constructor for lives and score. If you do, you need to pass default lives
     // and score values when you call this(1) in the default constructor.
-    public BattleMapWorld(int level, RoomInfo room, ConcurrentHashMap<String, String> userNamesById) {
+    public BattleMapWorld(int level, RoomInfo room, ConcurrentHashMap<String, String> userNamesById, String clientId) {
         super(level);
         this.room = room;
         this.userNamesById = userNamesById;
-        for (String clientId : userNamesById.keySet()) {
-            readyStatus.put(clientId, false);
-        }
-        drawHud();
+        drawHud(clientId);
     }
     
     public RoomInfo getRoom() {
@@ -65,13 +62,28 @@ public class BattleMapWorld extends LevelWorld {
         getLoader().setPlayer4StartLocClass(Player4StartLoc.class);
     }
     
-    public void drawHud() {
+    public void drawHud(String myClientId) {
         Rectangle hudLine = new Rectangle(getWidth(), 1);
         hudLine.setColor(Color.WHITE);
         addObject(hudLine, getWidth() / 2, getHeight() - HUD_HEIGHT);
         
-        ReadyButton readyBtn = new ReadyButton();
-        addObject(readyBtn, getWidth() / 2, getHeight() - HUD_HEIGHT / 2);
+        ArrayList<String> players = new ArrayList<>(userNamesById.keySet());
+        Collections.sort(players);
+        int horizontalSpacing = getWidth() / room.getCapacity();
+        int x = horizontalSpacing / 2;
+        for (String clientId : players) {
+            readyStatus.put(clientId, false);
+            Actor btn;
+            if (clientId.equals(myClientId)) {
+                btn = new ReadyButton();
+            } else {
+                btn = new OtherPlayerReadyStatus(clientId);
+            }
+            addObject(btn, x, getHeight() - HUD_HEIGHT / 2);
+            x += horizontalSpacing;
+        } 
+        
+        
     }
     
     public String getIdForPlayer(int playerNum) {
@@ -84,10 +96,19 @@ public class BattleMapWorld extends LevelWorld {
         readyStatus.put(clientId, true);
         if (clientId.equals(getClient().getId())) {
             getClient().broadcastMessageToRoom("READY", getRoom().getId());
+            
         }
         if (allPlayersReady()) {
             startGame();
         }
+    }
+    
+    public String getClientName(String clientId) {
+        return userNamesById.get(clientId);
+    }
+    
+    public boolean isPlayerReady(String clientId) {
+        return readyStatus.get(clientId);
     }
     
     public boolean allPlayersReady() {

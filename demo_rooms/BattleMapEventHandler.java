@@ -38,29 +38,12 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
         BattleMapWorld bw = (BattleMapWorld)getWorld();
         bw.setPlayerReady(clientId);
     }
-
-    // /**
-     // * This method is called when this client is disconnected from the server.
-     // * Subclasses should override this method to take actions after the client
-     // * has been disconnected.
-     // */
-    // @Override
-    // public void onDisconnected(GameClient client) {
-        // System.out.println("Disconnected in room handler");
-    // }
-
-    // @Override
-    // public void handleRoomRemoved(String roomId, GameClient client) {
-        // System.out.println("Room removed being handled by Room Event Handler " + roomId);
-    // }
-
-    // @Override
-    // public void handleClientJoinedRoom(String clientId, String roomId, GameClient client) {
-        
-    // }
-
-    // @Override
-    // public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
-        
-    // }
+    
+    public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
+        if (roomId.equals(client.getId())) {
+            GameWorld gw = getWorld();
+            gw.removeObjects(gw.getClientActors(clientId));
+        }
+    }
+    
 }

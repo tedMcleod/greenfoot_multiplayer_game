@@ -16,7 +16,7 @@ public class ConnectButton extends Button {
     }
     
     @Override
-    public void onClick() {
+    public synchronized void onClick() {
         TitleWorld tw = (TitleWorld)getWorld();
         TitleWorld.lastAddress = tw.getAddress();
         TitleWorld.lastPort = "" + tw.getPort();

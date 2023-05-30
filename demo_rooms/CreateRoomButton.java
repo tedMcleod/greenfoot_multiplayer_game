@@ -16,7 +16,7 @@ public class CreateRoomButton extends Button {
     }
     
     @Override
-    public void onClick() {
+    public synchronized void onClick() {
         LobbyWorld lw = (LobbyWorld)getWorld();
         String roomName = nameField.getText();
         lw.getClient().addRoom(roomName, 4);
