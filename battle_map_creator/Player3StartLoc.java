@@ -1,14 +1,14 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 
 /**
- * Write a description of class MyGameWorld here.
+ * Write a description of class Player3StartLoc here.
  * 
  * @author (your name) 
  * @version (a version number or a date)
  */
-public class TankWorld extends GameWorld {
-
-    public TankWorld() {
-        super(600, 400, 1, false);
+public class Player3StartLoc extends PlayerStartLoc {
+    
+    public Player3StartLoc() {
+        super(3);
     }
 }

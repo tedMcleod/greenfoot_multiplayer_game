@@ -22,9 +22,23 @@ public class JoinRoomButton extends Button {
     public void onClick() {
         LobbyWorld lw = (LobbyWorld)getWorld();
         RoomWorld rw = new RoomWorld(room);
+        lw.getClient().setEventHandler(new RoomEventHandler(rw, room));
         rw.setClient(lw.getClient());
-        rw.getClient().setEventHandler(new RoomEventHandler(rw, room));
+        
         Greenfoot.setWorld(rw);
         rw.getClient().broadcastMessage("JOIN_ROOM " + room.getId());
+    }
+    
+    @Override
+    public void act() {
+        super.act();
+        String name = room.getName();
+        if (room.members().size() == room.getCapacity()) {
+            setText(name + "(Full)");
+            setBackground(Color.GRAY);
+        } else {
+            setText(name + "(" + room.members().size() + ")");
+            setBackground(Color.BLACK);
+        }
     }
 }

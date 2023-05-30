@@ -23,7 +23,11 @@ public abstract class LocalActor extends GameActor {
     private Class<? extends GameActor> otherClass;
     
     public LocalActor(String clientId) {
-        super(UUID.randomUUID().toString(), clientId);
+        this(clientId, null);
+    }
+    
+    public LocalActor(String clientId, RoomInfo room) {
+        super(UUID.randomUUID().toString(), clientId, room);
         // replace default GreenfootImage with a LocalImage
         setImage(new LocalImage(getImage(), this));
     }
@@ -38,33 +42,25 @@ public abstract class LocalActor extends GameActor {
     
     @Override
     public void addedToWorld(World world) {
-        if (getWorldOfType(GameWorld.class).getClient() != null) {
-            getWorldOfType(GameWorld.class).getClient().broadcastMessage(GreenfootEventHandler.CMD_ADD + " " + otherClass.getName() + " " + getActorId() + " " + getX() + " " + getY());
-        }
+        broadcastMessage(GreenfootEventHandler.CMD_ADD + " " + otherClass.getName() + " " + getActorId() + " " + getX() + " " + getY());
     }
     
     @Override
     public void setLocation(int x, int y) {
         super.setLocation(x, y);
-        if (getWorldOfType(GameWorld.class).getClient() != null) {
-            getWorldOfType(GameWorld.class).getClient().broadcastMessage(GreenfootEventHandler.CMD_MOVE + " " + getActorId() + " " + getX() + " " + getY());
-        }
+        broadcastMessage(GreenfootEventHandler.CMD_MOVE + " " + getActorId() + " " + getX() + " " + getY());
     }
     
     @Override
     public void setRotation(int rotation) {
         super.setRotation(rotation);
-        if (getWorldOfType(GameWorld.class).getClient() != null) {
-            getWorldOfType(GameWorld.class).getClient().broadcastMessage(GreenfootEventHandler.CMD_ROTATE + " " + getActorId() + " " + getRotation());
-        }
+        broadcastMessage(GreenfootEventHandler.CMD_ROTATE + " " + getActorId() + " " + getRotation());
     }
     
     @Override
     public void setImage(String fileName) {
         super.setImage(new LocalImage(fileName, this));
-        if (getWorldOfType(GameWorld.class).getClient() != null) {
-            getWorldOfType(GameWorld.class).getClient().broadcastMessage(GreenfootEventHandler.CMD_IMAGE + " " + getActorId() + " " + fileName);
-        }
+        broadcastMessage(GreenfootEventHandler.CMD_IMAGE + " " + getActorId() + " " + fileName);
     }
     
 }

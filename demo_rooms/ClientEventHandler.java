@@ -47,6 +47,8 @@ public interface ClientEventHandler {
     default void handleRoomsInfo(Set<RoomInfo> rooms, GameClient client) {}
 
     default void handleRoomAdded(RoomInfo room, GameClient client) {}
+    
+    default void handleAddRoomFailed(String roomName, int capacity, GameClient client) {}
 
     default void handleRoomRemoved(String roomId, GameClient client) {}
     
@@ -55,7 +57,5 @@ public interface ClientEventHandler {
     default void handleJoinRoomFailed(String reason, String roomId, GameClient client) {}
     
     default void handleClientLeftRoom(String clientId, String roomId, GameClient client) {}
-    
-    default void handleLeaveRoomFailed(String reason, String roomId, GameClient client) {}
     
 }

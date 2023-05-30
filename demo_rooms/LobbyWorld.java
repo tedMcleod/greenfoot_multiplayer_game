@@ -1,5 +1,6 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 import java.util.List;
+import java.util.Set;
 
 /**
  * Write a description of class LobbyWorld here.
@@ -34,6 +35,13 @@ public class LobbyWorld extends GameWorld {
         int crbh = createRoomBtn.getImage().getHeight();
         int crbx = rnfx + rnfw / 2 + crbw / 2;
         addObject(createRoomBtn, crbx, getHeight() - crbh / 2 - margin);
+    }
+    
+    public void updateRooms(Set<RoomInfo> rooms) {
+        removeObjects(getObjects(JoinRoomButton.class));
+        for (RoomInfo room : rooms) {
+            addRoom(room);
+        }
     }
     
     public void addRoom(RoomInfo room) {

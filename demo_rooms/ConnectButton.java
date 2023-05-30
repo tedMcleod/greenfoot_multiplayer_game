@@ -22,9 +22,10 @@ public class ConnectButton extends Button {
         TitleWorld.lastPort = "" + tw.getPort();
         TitleWorld.lastName = tw.getName();
         GameWorld gw = new LobbyWorld();
-        gw.setClient(new DemoRoomsClient(tw.getAddress(), tw.getPort(), tw.getName()));
-        gw.getClient().setEventHandler(new LobbyEventHandler(gw));
-        gw.getClient().start();
+        DemoRoomsClient client = new DemoRoomsClient(tw.getAddress(), tw.getPort(), tw.getName());
+        client.start();
+        client.setEventHandler(new LobbyEventHandler(gw));
+        gw.setClient(client);
         Greenfoot.setWorld(gw);
     }
 }

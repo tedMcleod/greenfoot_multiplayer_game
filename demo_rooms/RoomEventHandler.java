@@ -1,5 +1,6 @@
 import java.util.Set;
 import java.util.Scanner;
+import greenfoot.Greenfoot;
 
 /**
  * Write a description of class RoomEventHandler here.
@@ -10,6 +11,7 @@ import java.util.Scanner;
 public class RoomEventHandler extends GreenfootEventHandler {
 
     private static final String CMD_USERNAME = "USER_NAME";
+    private static final String CMD_START_GAME = "START_GAME";
 
     private RoomInfo room;
 
@@ -33,6 +35,8 @@ public class RoomEventHandler extends GreenfootEventHandler {
         if (cmd.equals(CMD_USERNAME)) {
             String name = scan.nextLine().trim();
             handleUserNameCmd(senderId, name);
+        } else if (cmd.equals(CMD_START_GAME)) {
+            handleStartGameCmd(senderId);
         } else {
             System.out.println("Command not handled by RoomEventHandler " + command);
         }
@@ -42,6 +46,16 @@ public class RoomEventHandler extends GreenfootEventHandler {
         System.out.println("username being added for " + name);
         RoomWorld roomWorld = (RoomWorld)getWorld();
         roomWorld.setUserName(clientId, name);
+    }
+    
+    protected void handleStartGameCmd(String clientId) {
+        System.out.println("Client Started Game: " + clientId);
+        RoomWorld rw = (RoomWorld)getWorld();
+        // BattleMapWorld(int level, RoomInfo room, ConcurrentHashMap<String, String> userNamesById)
+        BattleMapWorld bw = new BattleMapWorld(1, room, rw.getUserNamesById());
+        bw.setClient(rw.getClient());
+        bw.getClient().setEventHandler(new BattleMapEventHandler(bw, room));
+        Greenfoot.setWorld(bw);
     }
 
     /**
@@ -81,6 +95,14 @@ public class RoomEventHandler extends GreenfootEventHandler {
             room.removeMember(clientId);
             RoomWorld roomWorld = (RoomWorld)getWorld();
             roomWorld.updateUserLabels();
+            if (clientId.equals(client.getId())) {
+                System.out.println("leaving room and going to lobby");
+                LobbyWorld lw = new LobbyWorld();
+                System.out.println("client == roomWorld.getClient() -> " + (client == roomWorld.getClient()));
+                client.setEventHandler(new LobbyEventHandler(lw));
+                lw.setClient(roomWorld.getClient());
+                Greenfoot.setWorld(lw);
+            }
         }
     }
 }

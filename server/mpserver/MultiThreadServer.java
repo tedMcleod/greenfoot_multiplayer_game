@@ -35,16 +35,29 @@ public class MultiThreadServer implements Runnable {
     // if not in a room, the client will not be in this map
     private ConcurrentHashMap<String, String> roomsByClient = new ConcurrentHashMap<>();
     
+    private final int MAX_ROOMS;
+    
     // A reference to the ServerSocket
     private ServerSocket ssock;
 
     /**
-     * Create a MultiThreadServer with the given socket and a max of 8 rooms.
+     * Create a MultiThreadServer with the given socket and effectively no maximum number of rooms.
      * 
      * @param sock the socket
      */
     public MultiThreadServer(ServerSocket sock) {
+        this(sock, Integer.MAX_VALUE);
+    }
+    
+    /**
+     * Create a MultiThreadServer with the given socket and the given maximum number of rooms.
+     * 
+     * @param sock the socket
+     * @param maxRooms the maximum number of rooms
+     */
+    public MultiThreadServer(ServerSocket sock, int maxRooms) {
         ssock = sock;
+        MAX_ROOMS = maxRooms;
     }
 
     /**
@@ -87,19 +100,37 @@ public class MultiThreadServer implements Runnable {
      * <pre>
      * ROOM_ADDED c9a5de7c-7828-44dc-8fcc-da7a6a2f55dd HappyHome 6
      * </pre>
+     * <p>
+     * Note that if the MAX_ROOMS cap would be exceeded by this room, this method will return false
+     * and the ClientThread will send an error message to the client that requested the room be created
+     * in the form: ADD_ROOM_FAILED roomName roomCapacity
+     * </p>
+     * <p>
+     * For example, if the call above failed, the message would be:
+     * </p>
+     * <pre>
+     * ADD_ROOM_FAILED HappyHome 6
+     * </pre>
+     * 
      * 
      * @param roomName the name of the room (commas will be removed from the name)
      * @param capacity the maximum number of clients allowed to join the room (if < 1, it will be set to 1)
+     * @return true if the room was successfully created and false otherwise (i.e. max rooms was reached)
      */ 
-    public synchronized void addRoom(String roomName, int capacity) {
-        // remove all commas and spaces from room name
-        if (capacity < 1) capacity = 1;
-        roomName = roomName.replaceAll("\\s", "");
-        String roomId = generateUUID();
-        rooms.put(roomId, new ConcurrentHashMap<>());
-        roomNames.put(roomId, roomName);
-        roomCapacities.put(roomId, capacity);
-        broadcast("ROOM_ADDED " + roomId + " " + roomName + " " + capacity);
+    public synchronized boolean addRoom(String roomName, int capacity) {
+        if (rooms.size() < MAX_ROOMS) {
+            // remove all commas and spaces from room name
+            if (capacity < 1) capacity = 1;
+            roomName = roomName.replaceAll("\\s", "");
+            String roomId = generateUUID();
+            rooms.put(roomId, new ConcurrentHashMap<>());
+            roomNames.put(roomId, roomName);
+            roomCapacities.put(roomId, capacity);
+            broadcast("ROOM_ADDED " + roomId + " " + roomName + " " + capacity);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

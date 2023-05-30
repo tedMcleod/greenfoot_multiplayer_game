@@ -37,6 +37,7 @@ public class GameClient implements Runnable {
 
     public static final String CMD_ROOMS_INFO = "ROOMS_INFO";
     public static final String CMD_ROOM_ADDED = "ROOM_ADDED";
+    public static final String CMD_ADD_ROOM_FAIL = "ADD_ROOM_FAILED";
     public static final String CMD_ROOM_REMOVED = "ROOM_REMOVED";
 
     public static final String CMD_ID = "ID";
@@ -46,7 +47,7 @@ public class GameClient implements Runnable {
     public static final String CMD_JOINED_ROOM = "JOINED_ROOM";
     public static final String CMD_JOIN_ROOM_FAIL = "JOIN_ROOM_FAIL";
     public static final String CMD_LEFT_ROOM = "LEFT_ROOM";
-    public static final String CMD_LEAVE_ROOM_FAIL = "LEAVE_ROOM_FAIL";
+    
 
     private String hostName;
     private int portNumber;
@@ -194,7 +195,11 @@ public class GameClient implements Runnable {
                 if(eventHandler != null) eventHandler.handleRoomAdded(getRoomInfo(cmd.substring(CMD_ROOM_ADDED.length())), this);
             } else if (firstToken.equals(CMD_ROOM_ADDED)) {
                 if(eventHandler != null) eventHandler.handleRoomRemoved(reader.next(), this);
-            } else if (firstToken.equals(CMD_JOINED_ROOM)) {
+            } else if (firstToken.equals(CMD_ADD_ROOM_FAIL)) {
+                String roomName = reader.next();
+                int roomCapacity = reader.nextInt();
+                if(eventHandler != null) eventHandler.handleAddRoomFailed(roomName, roomCapacity, this);
+            }else if (firstToken.equals(CMD_JOINED_ROOM)) {
                 String clientId = reader.next();
                 String roomId = reader.next();
                 if(eventHandler != null) eventHandler.handleClientJoinedRoom(clientId, roomId, this);
@@ -206,10 +211,6 @@ public class GameClient implements Runnable {
                 String clientId = reader.next();
                 String roomId = reader.next();
                 if(eventHandler != null) eventHandler.handleClientLeftRoom(clientId, roomId, this);
-            } else if (firstToken.equals(CMD_LEAVE_ROOM_FAIL)) {
-                String reason = reader.next();
-                String roomId = reader.next();
-                if(eventHandler != null) eventHandler.handleLeaveRoomFailed(reason, roomId, this);
             } else if (reader.hasNext()){
                 String secondToken = reader.next();
                 if (secondToken.equals(CMD_ID)) {

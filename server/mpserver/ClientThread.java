@@ -48,7 +48,9 @@ public class ClientThread implements Runnable {
                     } else if (first.equals("ADD_ROOM")) {
                         String roomName = reader.next();
                         int roomCapacity = reader.nextInt();
-                        server.addRoom(roomName, roomCapacity);
+                        if (!server.addRoom(roomName, roomCapacity)) {
+                            server.sendMessage("ADD_ROOM_FAILED " + roomName + " " + roomCapacity, id); 
+                        }
                     } else if (first.equals("REMOVE_ROOM")) {
                         String roomId = reader.next();
                         server.removeRoom(roomId);
