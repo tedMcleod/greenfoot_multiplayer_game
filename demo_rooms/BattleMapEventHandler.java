@@ -8,6 +8,7 @@ import java.util.Scanner;
  */
 public class BattleMapEventHandler extends GreenfootEventHandler {
     private static final String CMD_READY = "READY";
+    private static final String CMD_WIN = "WIN";
 
     private RoomInfo room;
 
@@ -29,6 +30,8 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
 
         if (cmd.equals(CMD_READY)) {
             handleReadyCmd(senderId);
+        } else if (cmd.equals(CMD_WIN)) {
+            handleWinCmd(senderId);
         } else {
             System.out.println("Command not handled by BattleMapEventHandler " + command);
         }
@@ -37,6 +40,11 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
     protected void handleReadyCmd(String clientId) {
         BattleMapWorld bw = (BattleMapWorld)getWorld();
         bw.setPlayerReady(clientId);
+    }
+    
+    protected void handleWinCmd(String clientId) {
+        BattleMapWorld bw = (BattleMapWorld)getWorld();
+        bw.setPlayerWon(clientId);
     }
     
     public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
