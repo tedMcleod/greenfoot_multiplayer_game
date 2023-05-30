@@ -9,7 +9,7 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 public class ReadyButton extends Button {
 
     public ReadyButton() {
-        super("Leave");
+        super("Ready");
         setSize(40);
         setForeground(Color.GREEN);
         setBackground(Color.RED);

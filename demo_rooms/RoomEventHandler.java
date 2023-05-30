@@ -49,13 +49,8 @@ public class RoomEventHandler extends GreenfootEventHandler {
     }
     
     protected void handleStartGameCmd(String clientId) {
-        System.out.println("Client Started Game: " + clientId);
         RoomWorld rw = (RoomWorld)getWorld();
-        // BattleMapWorld(int level, RoomInfo room, ConcurrentHashMap<String, String> userNamesById)
-        BattleMapWorld bw = new BattleMapWorld(1, room, rw.getUserNamesById());
-        bw.setClient(rw.getClient());
-        bw.getClient().setEventHandler(new BattleMapEventHandler(bw, room));
-        Greenfoot.setWorld(bw);
+        rw.startGame();
     }
 
     /**

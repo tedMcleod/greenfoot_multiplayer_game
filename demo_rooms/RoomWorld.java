@@ -35,10 +35,6 @@ public class RoomWorld extends GameWorld {
         updateUserLabels();
     }
     
-    public ConcurrentHashMap<String, String> getUserNamesById() {
-        return new ConcurrentHashMap<>(userNamesById);
-    }
-    
     public RoomInfo getRoom() {
         return room;
     }
@@ -63,5 +59,12 @@ public class RoomWorld extends GameWorld {
             addObject(label, margin + label.getImage().getWidth() / 2, y);
             lastBottomEdgeY = y + label.getImage().getHeight() / 2;
         }
+    }
+    
+    public void startGame() {
+        BattleMapWorld bw = new BattleMapWorld(1, room, userNamesById);
+        getClient().setEventHandler(new BattleMapEventHandler(bw, room));
+        bw.setClient(getClient());
+        Greenfoot.setWorld(bw);
     }
 }

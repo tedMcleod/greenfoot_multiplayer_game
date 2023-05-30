@@ -69,6 +69,9 @@ public class BattleMapWorld extends LevelWorld {
         Rectangle hudLine = new Rectangle(getWidth(), 1);
         hudLine.setColor(Color.WHITE);
         addObject(hudLine, getWidth() / 2, getHeight() - HUD_HEIGHT);
+        
+        ReadyButton readyBtn = new ReadyButton();
+        addObject(readyBtn, getWidth() / 2, getHeight() - HUD_HEIGHT / 2);
     }
     
     public String getIdForPlayer(int playerNum) {

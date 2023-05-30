@@ -23,6 +23,8 @@ public class StartGameButton extends Button {
         GameWorld gw = getWorldOfType(GameWorld.class);
         if (gw != null) {
             gw.getClient().broadcastMessageToRoom("START_GAME", room.getId());
+            RoomWorld rw = (RoomWorld)getWorld();
+            rw.startGame();
         }
     }
     
