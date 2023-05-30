@@ -92,6 +92,12 @@ public class BattleMapWorld extends LevelWorld {
         return players.get(playerNum + 1);
     }
     
+    public int getPlayerNum(String clientId) {
+        ArrayList<String> players = new ArrayList<>(userNamesById.keySet());
+        Collections.sort(players);
+        return players.indexOf(clientId);
+    }
+    
     public void setPlayerReady(String clientId) {
         readyStatus.put(clientId, true);
         if (clientId.equals(getClient().getId())) {
@@ -120,6 +126,22 @@ public class BattleMapWorld extends LevelWorld {
     
     public void startGame() {
         System.out.println("STARTING GAME");
+        int playerNum = getPlayerNum(getClient().getId());
+        Actor startLoc;
+        if (playerNum == 1) {
+            startLoc = getObjects(Player1StartLoc.class).get(0);
+        } else if (playerNum == 2) {
+            startLoc = getObjects(Player2StartLoc.class).get(0);
+        } else if (playerNum == 3) {
+            startLoc = getObjects(Player3StartLoc.class).get(0);
+        } else {
+            startLoc = getObjects(Player4StartLoc.class).get(0);
+        }
+        int startX = startLoc.getX();
+        int startY = startLoc.getY();
+        
+        System.out.println("Start Loc: (" + startX + ", " + startY + ")");
+        
     }
     
 }
