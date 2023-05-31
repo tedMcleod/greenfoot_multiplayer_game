@@ -42,8 +42,10 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
     }
     
     protected void handleHitCmd(String clientId, String actorId) {
-        Player player = (Player)getWorld().getGameActor(actorId);
-        if (player != null) player.onHit();
+        if (getWorld().getGameActor(actorId) instanceof Player) {
+            Player player = (Player)getWorld().getGameActor(actorId);
+            if (player != null) player.onHit();
+        }
     }
 
     protected void handleReadyCmd(String clientId) {
