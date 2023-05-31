@@ -24,10 +24,10 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
         Scanner scan = new Scanner(command);
         // The first token is always the id of the client who sent the message
         String senderId = scan.next();
-        System.out.println("senderId = " + senderId);
+        if (Debug.DEBUG) System.out.println("senderId = " + senderId);
         // The second token is the command (ADD, MOVE, ROT, DESTROY...etc)
         String cmd = scan.next();
-        System.out.println("cmd = " + cmd);
+        if (Debug.DEBUG) System.out.println("cmd = " + cmd);
 
         if (cmd.equals(CMD_READY)) {
             handleReadyCmd(senderId);
@@ -37,7 +37,7 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
             String actorId = scan.next();
             handleHitCmd(senderId, actorId);
         } else {
-            System.out.println("Command not handled by BattleMapEventHandler " + command);
+            if (Debug.DEBUG) System.out.println("Command not handled by BattleMapEventHandler " + command);
         }
     }
     

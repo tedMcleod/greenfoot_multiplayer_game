@@ -33,7 +33,7 @@ public abstract class GameActor extends Actor {
     }
     
     public void destroy() {
-        System.out.println(getClass().getName() + " calling destroy");
+        if (Debug.DEBUG) System.out.println(getClass().getName() + " calling destroy");
         GameWorld gw = getWorldOfType(GameWorld.class);
         if (gw != null) {
             onDestroy(gw);

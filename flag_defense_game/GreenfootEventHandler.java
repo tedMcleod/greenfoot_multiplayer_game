@@ -73,7 +73,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      */
     @Override
     public void handleCommand(String command, GameClient client) {
-        System.out.println("Attempting to handle command in GreenfootEventHandler " + command);
+        if (Debug.DEBUG) System.out.println("Attempting to handle command in GreenfootEventHandler " + command);
         Scanner scan = new Scanner(command);
         // The first token is always the id of the client who sent the message
         String senderId = scan.next();
@@ -136,7 +136,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
             String actorId = scan.next();
             handleDestroyCmd(actorId);
         } else {
-            System.out.println("Command not handled by GreenfootEventHandler " + command);
+            if (Debug.DEBUG) System.out.println("Command not handled by GreenfootEventHandler " + command);
         }
     }
     

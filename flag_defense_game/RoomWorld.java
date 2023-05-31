@@ -45,8 +45,8 @@ public class RoomWorld extends GameWorld {
     }
     
     public void updateUserLabels() {
-        System.out.println("Updating labels for room " + room);
-        System.out.println("usernames: " + userNamesById);
+        if (Debug.DEBUG) System.out.println("Updating labels for room " + room);
+        if (Debug.DEBUG) System.out.println("usernames: " + userNamesById);
         removeObjects(getObjects(UserLabel.class));
         int lastBottomEdgeY = 0;
         int margin = 5;

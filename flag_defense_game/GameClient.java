@@ -168,7 +168,6 @@ public class GameClient implements Runnable {
             setIsConnected(true);
             // keep getting the next command while still connected and thread is not interrupted
             while (nextCommand != null && !Thread.interrupted()){
-                //System.out.println(nextCommand);
                 processCommand(nextCommand);
                 // get the next command
                 nextCommand = in.readLine();
@@ -183,7 +182,7 @@ public class GameClient implements Runnable {
     }
 
     protected synchronized void processCommand(String cmd) {
-        System.out.println("process command: " + cmd);
+        if (Debug.DEBUG) System.out.println("process command: " + cmd);
         try (Scanner reader = new Scanner(cmd)) {
             // every message starts with the clientId of the sender except server messages
             String firstToken = reader.next();
@@ -223,11 +222,11 @@ public class GameClient implements Runnable {
                 } else if (secondToken.equals(CMD_DISCONNECT)) {
                     if(eventHandler != null) eventHandler.handleOtherClientDisconnected(firstToken, this);
                 } else {
-                    System.out.println("Passing command to eventhandler " + cmd);
+                    if (Debug.DEBUG) System.out.println("Passing command to eventhandler " + cmd);
                     if(eventHandler != null) eventHandler.handleCommand(cmd, this);
                 }
             } else {
-                System.out.println("Passing command to eventhandler " + cmd);
+                if (Debug.DEBUG) System.out.println("Passing command to eventhandler " + cmd);
                 if(eventHandler != null) eventHandler.handleCommand(cmd, this);
             }
         } catch (Exception err) {
@@ -254,7 +253,6 @@ public class GameClient implements Runnable {
     }
 
     private Set<RoomInfo> getRoomsInfo(String str) {
-        //System.out.println("Getting room info: " + str);
         Set<RoomInfo> rooms = new HashSet<>();
         if (str.length() == 0) return rooms;
         String[] roomsSplit = str.split(",");

@@ -240,11 +240,11 @@ public class BattleMapWorld extends LevelWorld {
     }
 
     public void startGame() {
-        System.out.println("STARTING GAME");
+        if (Debug.DEBUG) System.out.println("STARTING GAME");
         Actor startLoc = getStartLoc(getClient().getId());
         int startX = startLoc.getX();
         int startY = startLoc.getY();
-        System.out.println("Start Loc: (" + startX + ", " + startY + ")");
+        if (Debug.DEBUG) System.out.println("Start Loc: (" + startX + ", " + startY + ")");
         Player player = new Player(getClient().getId());
         addObject(player, startX, startY);
         player.turnTowards(getWidth() / 2, getHeight() / 2);

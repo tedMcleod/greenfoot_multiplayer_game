@@ -23,14 +23,14 @@ public class RoomEventHandler extends GreenfootEventHandler {
     @Override
     public void handleCommand(String command, GameClient client) {
         super.handleCommand(command, client);
-        System.out.println("Attempting to handle command in RoomEventHandler " + command);
+        if (Debug.DEBUG) System.out.println("Attempting to handle command in RoomEventHandler " + command);
         Scanner scan = new Scanner(command);
         // The first token is always the id of the client who sent the message
         String senderId = scan.next();
-        System.out.println("senderId = " + senderId);
+        if (Debug.DEBUG) System.out.println("senderId = " + senderId);
         // The second token is the command (ADD, MOVE, ROT, DESTROY...etc)
         String cmd = scan.next();
-        System.out.println("cmd = " + cmd);
+        if (Debug.DEBUG) System.out.println("cmd = " + cmd);
 
         if (cmd.equals(CMD_USERNAME)) {
             String name = scan.nextLine().trim();
@@ -38,12 +38,12 @@ public class RoomEventHandler extends GreenfootEventHandler {
         } else if (cmd.equals(CMD_START_GAME)) {
             handleStartGameCmd(senderId);
         } else {
-            System.out.println("Command not handled by RoomEventHandler " + command);
+            if (Debug.DEBUG) System.out.println("Command not handled by RoomEventHandler " + command);
         }
     }
 
     protected void handleUserNameCmd(String clientId, String name) {
-        System.out.println("username being added for " + name);
+        if (Debug.DEBUG) System.out.println("username being added for " + name);
         RoomWorld roomWorld = (RoomWorld)getWorld();
         room.addMember(clientId);
         roomWorld.setUserName(clientId, name);
@@ -61,12 +61,12 @@ public class RoomEventHandler extends GreenfootEventHandler {
      */
     @Override
     public void onDisconnected(GameClient client) {
-        System.out.println("Disconnected in room handler");
+        if (Debug.DEBUG) System.out.println("Disconnected in room handler");
     }
 
     @Override
     public void handleRoomRemoved(String roomId, GameClient client) {
-        System.out.println("Room removed being handled by Room Event Handler " + roomId);
+        if (Debug.DEBUG) System.out.println("Room removed being handled by Room Event Handler " + roomId);
     }
 
     @Override
@@ -91,19 +91,6 @@ public class RoomEventHandler extends GreenfootEventHandler {
             room.removeMember(clientId);
             RoomWorld roomWorld = (RoomWorld)getWorld();
             roomWorld.updateUserLabels();
-            if (clientId.equals(client.getId())) {
-                // System.out.println("leaving room and going to lobby");
-                // LobbyWorld lw = new LobbyWorld();
-                // System.out.println("Created LobbyWorld");
-                
-                // roomWorld.getClient().setEventHandler(new LobbyEventHandler(lw));
-                // System.out.println("setEventHandler done");
-                // lw.setClient(roomWorld.getClient());
-                // System.out.println("setClient done");
-                // lw.setNeedsUpdate();
-                // Greenfoot.setWorld(lw);
-                // System.out.println("set world done");
-            }
         }
     }
 }

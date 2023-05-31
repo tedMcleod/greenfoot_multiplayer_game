@@ -42,7 +42,7 @@ public class LobbyEventHandler extends GreenfootEventHandler {
     
     @Override
     public void handleJoinRoomFailed(String reason, String roomId, GameClient client) {
-        System.out.println("Failed to join room " + roomId + " because " + reason);
+        if (Debug.DEBUG) System.out.println("Failed to join room " + roomId + " because " + reason);
     }
     
     @Override
