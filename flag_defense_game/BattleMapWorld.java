@@ -30,6 +30,8 @@ public class BattleMapWorld extends LevelWorld {
     private Rectangle shotBar = new Rectangle(100, HUD_HEIGHT / 3);
     
     private Text flagTimeTxt;
+    
+    private Text directions;
 
     // static initialization code - runs when the class is loaded, before the main method is called.
     // You can only call static methods and only access static fields.
@@ -159,6 +161,13 @@ public class BattleMapWorld extends LevelWorld {
                 int labelY = getHeight() - HUD_HEIGHT / 2;
                 int labelX = getWidth() - padding - w / 2;
                 addObject(flagTimeTxt, labelX, labelY);
+            }
+            
+            if (directions == null) {
+                directions = new Text("Up/Left/Right/Down to move\nx boosts speed and space fires\nGo camp at flag to win!");
+                directions.setSize((HUD_HEIGHT - padding * 4) / 3);
+                directions.setForeground(Color.WHITE);
+                addObject(directions, getWidth() / 2, getHeight() - HUD_HEIGHT / 2);
             }
             
             fillBar(speedBar, player.getSpeedCooldown(), player.getSpeedDuration(), Color.GREEN);

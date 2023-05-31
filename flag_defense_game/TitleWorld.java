@@ -23,6 +23,11 @@ public class TitleWorld extends World {
         ConnectButton btn = new ConnectButton();
         addObject(btn, getWidth() / 2, getHeight() / 2);
         
+        Text title = new Text("Flag Defense");
+        title.setForeground(Color.RED);
+        title.setSize(80);
+        addObject(title, getWidth() / 2, getHeight() / 4);
+        
         int margin = 5;
         
         Text addressLabel = new Text("Address ");
