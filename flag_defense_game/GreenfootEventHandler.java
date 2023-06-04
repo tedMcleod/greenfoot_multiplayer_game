@@ -62,9 +62,13 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
     public void handleOtherClientJoined(String clientId, GameClient client) {
         // This will respond to the sender client with messages saying to add the
         // corresponding classes that represent each LocalActor this client controls
-        for (LocalActor la : getWorld().getObjects(LocalActor.class)) {
-            String msg = GreenfootEventHandler.CMD_ADD + " " + la.getOtherClass().getName() + " " + la.getActorId() + " " + la.getX() + " " + la.getY();
-            client.sendMessage(msg, clientId);
+        String myRoomId = client.getCurrentRoomId();
+        String otherRoomId = client.getIdOfRoomContainingClient(clientId);
+        if (otherRoomId == null && myRoomId == null || (myRoomId != null && myRoomId.equals(otherRoomId))) {
+            for (LocalActor la : getWorld().getObjects(LocalActor.class)) {
+                String msg = GreenfootEventHandler.CMD_ADD + " " + la.getOtherClass().getName() + " " + la.getActorId() + " " + la.getX() + " " + la.getY();
+                client.sendMessage(msg, clientId);
+            }
         }
     }
 

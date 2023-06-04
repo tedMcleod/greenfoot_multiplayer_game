@@ -11,11 +11,8 @@ public class BattleMapEventHandler extends GreenfootEventHandler {
     private static final String CMD_WIN = "WIN";
     private static final String CMD_HIT = "HIT";
 
-    private RoomInfo room;
-
-    public BattleMapEventHandler(GameWorld world, RoomInfo room){
+    public BattleMapEventHandler(GameWorld world){
         super(world);
-        this.room = room;
     }
 
     @Override

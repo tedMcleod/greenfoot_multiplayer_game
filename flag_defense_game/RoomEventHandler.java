@@ -10,14 +10,12 @@ import greenfoot.Greenfoot;
  */
 public class RoomEventHandler extends GreenfootEventHandler {
 
-    private static final String CMD_USERNAME = "USER_NAME";
     private static final String CMD_START_GAME = "START_GAME";
+    private String roomId;
 
-    private RoomInfo room;
-
-    public RoomEventHandler(GameWorld world, RoomInfo room){
+    public RoomEventHandler(GameWorld world, String roomId){
         super(world);
-        this.room = room;
+        this.roomId = roomId;
     }
 
     @Override
@@ -32,65 +30,23 @@ public class RoomEventHandler extends GreenfootEventHandler {
         String cmd = scan.next();
         if (Debug.DEBUG) System.out.println("cmd = " + cmd);
 
-        if (cmd.equals(CMD_USERNAME)) {
-            String name = scan.nextLine().trim();
-            handleUserNameCmd(senderId, name);
-        } else if (cmd.equals(CMD_START_GAME)) {
+        if (cmd.equals(CMD_START_GAME)) {
             handleStartGameCmd(senderId);
         } else {
             if (Debug.DEBUG) System.out.println("Command not handled by RoomEventHandler " + command);
         }
     }
-
-    protected void handleUserNameCmd(String clientId, String name) {
-        if (Debug.DEBUG) System.out.println("username being added for " + name);
-        RoomWorld roomWorld = (RoomWorld)getWorld();
-        room.addMember(clientId);
-        roomWorld.setUserName(clientId, name);
-    }
     
     protected void handleStartGameCmd(String clientId) {
         RoomWorld rw = (RoomWorld)getWorld();
-        rw.startGame();
-    }
-
-    /**
-     * This method is called when this client is disconnected from the server.
-     * Subclasses should override this method to take actions after the client
-     * has been disconnected.
-     */
-    @Override
-    public void onDisconnected(GameClient client) {
-        if (Debug.DEBUG) System.out.println("Disconnected in room handler");
-    }
-
-    @Override
-    public void handleRoomRemoved(String roomId, GameClient client) {
-        if (Debug.DEBUG) System.out.println("Room removed being handled by Room Event Handler " + roomId);
-    }
-
-    @Override
-    public void handleClientJoinedRoom(String clientId, String roomId, GameClient client) {
-        if (roomId.equals(room.getId())) {
-            room.addMember(clientId);
-            RoomWorld roomWorld = (RoomWorld)getWorld();
-            DemoRoomsClient drc = (DemoRoomsClient)client;
-            if (clientId.equals(client.getId())) {
-                roomWorld.setUserName(clientId, drc.getUserName());
-                drc.broadcastMessageToRoom("USER_NAME " + drc.getUserName(), roomId);
-            } else {
-                drc.sendMessage("USER_NAME " + drc.getUserName(), clientId);
-            }
-            roomWorld.updateUserLabels();
-        }
+        rw.shouldStartGame();
     }
 
     @Override
     public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
-        if (roomId.equals(room.getId())) {
-            room.removeMember(clientId);
-            RoomWorld roomWorld = (RoomWorld)getWorld();
-            roomWorld.updateUserLabels();
+        if (clientId.equals(client.getId()) && roomId.equals(client.getIdOfRoomContainingClient(client.getId()))) {
+            RoomWorld rw = (RoomWorld) getWorld();
+            rw.shouldLeave();
         }
     }
 }

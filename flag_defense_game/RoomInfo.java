@@ -13,12 +13,16 @@ public class RoomInfo {
     private String name;
     private int capacity;
     private Set<String> members;
+    private String ownerId;
+    private boolean isClosed;
     
-    public RoomInfo(String id, String name, int capacity, Set<String> members) {
+    public RoomInfo(String id, String name, int capacity, Set<String> members, String ownerId, boolean isClosed) {
         this.id = id;
         this.name = name;
         this.capacity = capacity;
+        this.ownerId = ownerId;
         this.members = new HashSet<>(members);
+        this.isClosed = isClosed;
     }
     
     public String getId() {
@@ -31,6 +35,22 @@ public class RoomInfo {
     
     public int getCapacity() {
         return capacity;
+    }
+    
+    public String getOwnerId() {
+        return ownerId;
+    }
+    
+    public void setOwnerId() {
+        this.ownerId = ownerId;
+    }
+    
+    public boolean isClosed() {
+        return isClosed;
+    }
+    
+    public void setClosed(boolean closed) {
+        isClosed = closed;
     }
     
     public Set<String> members() {
@@ -47,6 +67,6 @@ public class RoomInfo {
     
     @Override
     public String toString() {
-        return "Room (name:" + name + " id:" + id + " cap:" + capacity + " members:" + members + ")";
+        return "Room (name:" + name + " id:" + id + " cap:" + capacity + " owner:" + ownerId + " members:" + members + ")";
     }
 }

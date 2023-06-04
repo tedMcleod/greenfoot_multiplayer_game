@@ -8,37 +8,49 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  */
 public class JoinRoomButton extends Button {
     
-    private RoomInfo room;
+    private String roomId;
     
-    public JoinRoomButton(RoomInfo room) {
-        super(room.getName());
+    private static final Color FULL_COLOR = new Color(100, 100, 0);
+    private static final Color OPEN_COLOR = new Color(0, 100, 0);
+    private static final Color CLOSED_COLOR = new Color(100, 0, 0);
+    
+    
+    public JoinRoomButton(String roomId, String roomName) {
+        super(roomName);
         setSize(40);
         setForeground(Color.WHITE);
         setBackground(Color.BLACK);
-        this.room = room;
+        this.roomId = roomId;
     }
     
     @Override
-    public synchronized void onClick() {
+    public void onClick() {
         LobbyWorld lw = (LobbyWorld)getWorld();
-        RoomWorld rw = new RoomWorld(room);
-        lw.getClient().setEventHandler(new RoomEventHandler(rw, room));
-        rw.setClient(lw.getClient());
-        
-        Greenfoot.setWorld(rw);
-        rw.getClient().broadcastMessage("JOIN_ROOM " + room.getId());
+        lw.getClient().broadcastMessage("JOIN_ROOM " + roomId);
     }
     
     @Override
     public void act() {
         super.act();
-        String name = room.getName();
-        if (room.members().size() == room.getCapacity()) {
+        LobbyWorld lw = (LobbyWorld)getWorld();
+        String name = lw.getClient().getRoomName(roomId);
+        int numClientsInRoom = lw.getClient().getClientsInRoom(roomId).size();
+        int capacity = lw.getClient().getRoomCapacity(roomId);
+        boolean isClosed = lw.getClient().roomIsClosed(roomId);
+        if (isClosed) {
+            setText(name + "(" + numClientsInRoom + "/" + capacity + ") - Game In Progress");
+            setBackground(CLOSED_COLOR);
+        } else if (numClientsInRoom == capacity) {
             setText(name + "(Full)");
-            setBackground(Color.GRAY);
+            setBackground(FULL_COLOR);
         } else {
-            setText(name + "(" + room.members().size() + ")");
-            setBackground(Color.BLACK);
+            setText(name + "(" + numClientsInRoom + "/" + capacity + ")");
+            setBackground(OPEN_COLOR);
         }
+        
+    }
+    
+    public String getRoomId() {
+        return roomId;
     }
 }

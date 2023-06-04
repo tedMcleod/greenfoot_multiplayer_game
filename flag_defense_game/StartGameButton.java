@@ -7,24 +7,21 @@ import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
  * @version (a version number or a date)
  */
 public class StartGameButton extends Button {
-    
-    private RoomInfo room;
 
-    public StartGameButton(RoomInfo room) {
+    public StartGameButton() {
         super("Start");
         setSize(40);
         setForeground(Color.GREEN);
         setBackground(Color.RED);
-        this.room = room;
     }
 
     @Override
-    public synchronized void onClick() {
-        GameWorld gw = getWorldOfType(GameWorld.class);
-        if (gw != null) {
-            RoomWorld rw = (RoomWorld)getWorld();
-            rw.startGame();
-            gw.getClient().broadcastMessageToRoom("START_GAME", room.getId());
+    public void onClick() {
+        RoomWorld rw = getWorldOfType(RoomWorld.class);
+        if (rw != null) {
+            rw.getClient().closeRoom(rw.getClient().getCurrentRoomId());
+            rw.getClient().broadcastMessageToRoom("START_GAME", rw.getClient().getCurrentRoomId());
+            rw.shouldStartGame();
         }
     }
     

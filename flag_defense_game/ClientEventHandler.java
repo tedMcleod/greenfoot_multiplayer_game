@@ -9,6 +9,7 @@ import java.util.Set;
 public interface ClientEventHandler {
     
     String ROOM_FULL = "FULL";
+    String ROOM_CLOSED = "CLOSED";
     String NO_SUCH_ROOM = "NO_SUCH_ROOM";
     
     /**
@@ -44,8 +45,6 @@ public interface ClientEventHandler {
     
     default void handleOtherClientDisconnected(String clientId, GameClient client) {}
 
-    default void handleRoomsInfo(Set<RoomInfo> rooms, GameClient client) {}
-
     default void handleRoomAdded(RoomInfo room, GameClient client) {}
     
     default void handleAddRoomFailed(String roomName, int capacity, GameClient client) {}
@@ -57,5 +56,11 @@ public interface ClientEventHandler {
     default void handleJoinRoomFailed(String reason, String roomId, GameClient client) {}
     
     default void handleClientLeftRoom(String clientId, String roomId, GameClient client) {}
+    
+    default void handleRoomOwnership(String roomId, String ownerId, GameClient client) {}
+    
+    default void handleRoomClosed(String roomId, GameClient client) {}
+    
+    default void handleRoomOpened(String roomId, GameClient client) {}
     
 }

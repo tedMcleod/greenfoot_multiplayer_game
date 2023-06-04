@@ -8,6 +8,8 @@ import java.util.Scanner;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * THIS IS NOT ACCURATE ANYMORE SINCE THERE ARE EVENT HANDLERS
@@ -33,10 +35,11 @@ import java.util.HashSet;
  */
 public class GameClient implements Runnable {
 
-    public static final String CMD_ROOMS_INFO = "ROOMS_INFO";
+    //public static final String CMD_ROOMS_INFO = "ROOMS_INFO";
     public static final String CMD_ROOM_ADDED = "ROOM_ADDED";
     public static final String CMD_ADD_ROOM_FAIL = "ADD_ROOM_FAILED";
     public static final String CMD_ROOM_REMOVED = "ROOM_REMOVED";
+    public static final String CMD_ROOM_OWNER = "ROOM_OWNER";
 
     public static final String CMD_ID = "ID";
     public static final String CMD_DISCONNECT = "DC";
@@ -45,15 +48,41 @@ public class GameClient implements Runnable {
     public static final String CMD_JOINED_ROOM = "JOINED_ROOM";
     public static final String CMD_JOIN_ROOM_FAIL = "JOIN_ROOM_FAIL";
     public static final String CMD_LEFT_ROOM = "LEFT_ROOM";
-    
+    public static final String CMD_CLOSED_ROOM = "ROOM_CLOSED";
+    public static final String CMD_OPENED_ROOM = "ROOM_OPENED";
 
-    private String hostName;
-    private int portNumber;
+    private final String hostName;
+    private final int portNumber;
     private Socket sock;
     private String id;
     private volatile boolean isConnected;
     private ClientEventHandler eventHandler;
 
+    /* replicated data from server */
+    // Each key is the client id and each value is the socket of that client
+    private ConcurrentHashMap<String, Boolean> activeClients = new ConcurrentHashMap<>();
+
+    // each key is a room id and the value is a map where each key is a client and value is true
+    // (effectively a set of clients in the room)
+    //                       roomId ->              clientId -> true
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> rooms = new ConcurrentHashMap<>();
+
+    // Each key is a room id and each value is the name of the room
+    //                      roomId -> roomName
+    private ConcurrentHashMap<String, String> roomNames = new ConcurrentHashMap<>();
+
+    // each key is the room id and the value is the capacity of the room
+    private ConcurrentHashMap<String, Integer> roomCapacities = new ConcurrentHashMap<>();
+
+    // Each key is a client id, and each value is the id of the room the client is in
+    // if not in a room, the client will not be in this map
+    private ConcurrentHashMap<String, String> roomsByClient = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String, String> roomOwners = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> closedRooms = new ConcurrentHashMap<>();
+
+    private int maxRooms;
+    
     /**
      * Initialize a GameClient to connect to the given hostName and portNumber.
      * @param hostName the host name
@@ -116,29 +145,33 @@ public class GameClient implements Runnable {
     /**
      * disconnect from the server. Other clients will be sent a message informing them that this client was disconnected.
      */
-    public synchronized void disconnect() {
+    public void disconnect() {
         broadcastMessage(CMD_DISCONNECT);
     }
 
-    public synchronized void addRoom(String roomName, int capacity) {
+    public void addRoom(String roomName, int capacity) {
         roomName = roomName.replaceAll("[\\s,]+", "");
         broadcastMessage("ADD_ROOM " + roomName + " " + capacity);
     }
 
-    public synchronized void removeRoom(String roomId) {
+    public void removeRoom(String roomId) {
         broadcastMessage("REMOVE_ROOM " + roomId);
     }
 
-    public synchronized void joinRoom(String roomId) {
+    public void joinRoom(String roomId) {
         broadcastMessage("JOIN_ROOM " + roomId);
     }
 
-    public synchronized void leaveRoom(String roomId) {
+    public void leaveRoom(String roomId) {
         broadcastMessage("LEAVE_ROOM " + roomId);
     }
 
-    public synchronized void getRooms() {
-        broadcastMessage("GET_ROOMS");
+    public void closeRoom(String roomId) {
+        broadcastMessage("CLOSE_ROOM " + roomId);
+    }
+
+    public void openRoom(String roomId) {
+        broadcastMessage("OPEN_ROOM " + roomId);
     }
 
     /**
@@ -181,17 +214,19 @@ public class GameClient implements Runnable {
         }
     }
 
-    protected synchronized void processCommand(String cmd) {
+    protected void processCommand(String cmd) {
         if (Debug.DEBUG) System.out.println("process command: " + cmd);
         try (Scanner reader = new Scanner(cmd)) {
             // every message starts with the clientId of the sender except server messages
             String firstToken = reader.next();
-            if (firstToken.equals(CMD_ROOMS_INFO)) {
-                if(eventHandler != null) eventHandler.handleRoomsInfo(getRoomsInfo(cmd.substring(CMD_ROOMS_INFO.length())), this);
-            } else if (firstToken.equals(CMD_ROOM_ADDED)) {
-                if(eventHandler != null) eventHandler.handleRoomAdded(getRoomInfo(cmd.substring(CMD_ROOM_ADDED.length())), this);
-            } else if (firstToken.equals(CMD_ROOM_ADDED)) {
-                if(eventHandler != null) eventHandler.handleRoomRemoved(reader.next(), this);
+            if (firstToken.equals(CMD_ROOM_ADDED)) {
+                RoomInfo roomInfo = getRoomInfo(cmd.substring(CMD_ROOM_ADDED.length() + 1));
+                addRoomInfo(roomInfo);
+                if(eventHandler != null) eventHandler.handleRoomAdded(roomInfo, this);
+            } else if (firstToken.equals(CMD_ROOM_REMOVED)) {
+                String roomId = reader.next();
+                removeRoomInfo(roomId);
+                if(eventHandler != null) eventHandler.handleRoomRemoved(roomId, this);
             } else if (firstToken.equals(CMD_ADD_ROOM_FAIL)) {
                 String roomName = reader.next();
                 int roomCapacity = reader.nextInt();
@@ -199,6 +234,7 @@ public class GameClient implements Runnable {
             }else if (firstToken.equals(CMD_JOINED_ROOM)) {
                 String clientId = reader.next();
                 String roomId = reader.next();
+                addMemberToRoom(clientId, roomId);
                 if(eventHandler != null) eventHandler.handleClientJoinedRoom(clientId, roomId, this);
             } else if (firstToken.equals(CMD_JOIN_ROOM_FAIL)) {
                 String reason = reader.next();
@@ -207,7 +243,21 @@ public class GameClient implements Runnable {
             } else if (firstToken.equals(CMD_LEFT_ROOM)) {
                 String clientId = reader.next();
                 String roomId = reader.next();
+                removeMemberFromRoom(clientId, roomId);
                 if(eventHandler != null) eventHandler.handleClientLeftRoom(clientId, roomId, this);
+            } else if (firstToken.equals(CMD_ROOM_OWNER)) {
+                String roomId = reader.next();
+                String clientId = reader.next();
+                setRoomOwner(roomId, clientId);
+                if(eventHandler != null) eventHandler.handleRoomOwnership(roomId, clientId, this);
+            } else if (firstToken.equals(CMD_CLOSED_ROOM)) {
+                String roomId = reader.next();
+                setRoomClosed(roomId);
+                if(eventHandler != null) eventHandler.handleRoomClosed(roomId, this);
+            } else if (firstToken.equals(CMD_OPENED_ROOM)) {
+                String roomId = reader.next();
+                setRoomOpened(roomId);
+                if(eventHandler != null) eventHandler.handleRoomOpened(roomId, this);
             } else if (reader.hasNext()){
                 String secondToken = reader.next();
                 if (secondToken.equals(CMD_ID)) {
@@ -216,10 +266,14 @@ public class GameClient implements Runnable {
                     // the other clients saying it just joined. This gives them a chance to
                     // tell this client anything it needs to know when it first joins,
                     // such as what other game objects already exist
-                    setId(firstToken); 
+                    
+                    String stateStr = cmd.substring(cmd.indexOf(" ") + 1 + CMD_ID.length() + 1);
+                    setId(firstToken, stateStr); 
                 } else if (secondToken.equals(CMD_JOINED)) {
+                    addActiveClient(firstToken);
                     if(eventHandler != null) eventHandler.handleOtherClientJoined(firstToken, this);
                 } else if (secondToken.equals(CMD_DISCONNECT)) {
+                    removeActiveClient(firstToken);
                     if(eventHandler != null) eventHandler.handleOtherClientDisconnected(firstToken, this);
                 } else {
                     if (Debug.DEBUG) System.out.println("Passing command to eventhandler " + cmd);
@@ -246,34 +300,145 @@ public class GameClient implements Runnable {
      * set the id of this client. This should only be called internally to set
      * the id to the id assigned by the server.
      */
-    private synchronized void setId(String id) {
+    protected void setId(String id, String state) {
         this.id = id;
+        addActiveClient(id);
+        initClientState(state);
         if(eventHandler != null) eventHandler.onIdAssigned(id, this);
         broadcastMessage(CMD_JOINED);
     }
 
-    private Set<RoomInfo> getRoomsInfo(String str) {
-        Set<RoomInfo> rooms = new HashSet<>();
-        if (str.length() == 0) return rooms;
-        String[] roomsSplit = str.split(",");
-        for (String roomStr : roomsSplit) {
-            rooms.add(getRoomInfo(roomStr.trim()));
-        }
-        return rooms;
+    
+    /*
+    private ConcurrentHashMap<String, Boolean> activeClients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, Boolean>> rooms = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, String> roomNames = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Integer> roomCapacities = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, String> roomsByClient = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, String> roomOwners = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> closedRooms = new ConcurrentHashMap<>();
+    private int maxRooms;
+     */
+    private void initClientState(String stateStr) {
+        String[] split = stateStr.split("[|]");
+        fillMapWithKeys(activeClients, split[0]);
+        initRooms(split[1]);
+        maxRooms = Integer.parseInt(split[2]);
     }
 
+    private void fillMapWithKeys(Map<String, Boolean> map, String str) {
+        Scanner reader = new Scanner(str);
+        while (reader.hasNext()) map.put(reader.next(), true);
+    }
+
+    protected void initRooms(String str) {
+        if (str.length() == 0) return;
+        String[] split = str.split("[,]");
+        for (String roomStr : split) {
+            Scanner reader = new Scanner(roomStr);
+            String roomId = reader.next();
+            String name = reader.next();
+            roomNames.put(roomId, name);
+            int capacity = reader.nextInt();
+            roomCapacities.put(roomId, capacity);
+            String ownerId = reader.next();
+            if (!ownerId.equals("null")) roomOwners.put(roomId, ownerId);
+            boolean isClosed = reader.nextBoolean();
+            if (isClosed) closedRooms.put(roomId, true);
+            ConcurrentHashMap<String, Boolean> members = new ConcurrentHashMap<>();
+            rooms.put(roomId, members);
+            while (reader.hasNext()) {
+                String clientId = reader.next();
+                members.put(clientId, true);
+                roomsByClient.put(clientId, roomId);
+            }
+        }
+    }
+    
+    protected void addMemberToRoom(String clientId, String roomId) {
+        ConcurrentHashMap<String, Boolean> members = rooms.get(roomId);
+        if (members != null) members.put(clientId, true);
+        roomsByClient.put(clientId, roomId);
+    }
+    
+    protected void removeMemberFromRoom(String clientId, String roomId) {
+        ConcurrentHashMap<String, Boolean> members = rooms.get(roomId);
+        if (members != null) members.remove(clientId);
+    }
+    
+    protected void setRoomOwner(String roomId, String clientId) {
+        roomOwners.put(roomId, clientId);
+    }
+    
+    protected void setRoomClosed(String roomId) {
+        closedRooms.put(roomId, true);
+    }
+    
+    protected void setRoomOpened(String roomId) {
+        closedRooms.remove(roomId);
+    }
+    
+    protected void addRoomInfo(RoomInfo room) {
+        ConcurrentHashMap<String, Boolean> members = rooms.get(room.getId());
+        if (members == null) {
+            members = new ConcurrentHashMap<>();
+            rooms.put(room.getId(), members);
+        }
+        roomNames.put(room.getId(), room.getName());
+        roomCapacities.put(room.getId(), room.getCapacity());
+        if (room.getOwnerId() != null) roomOwners.put(room.getId(), room.getOwnerId());
+        if (room.isClosed()) closedRooms.put(room.getId(), true);
+        for (String memberId : room.members()) {
+            members.put(memberId, true);
+            roomsByClient.put(memberId, room.getId());
+        }
+    }
+    
+    protected void removeRoomInfo(String roomId) {
+        ConcurrentHashMap<String, Boolean> members = rooms.get(roomId);
+        if (members != null) {
+            for (String memberId : members.keySet()) {
+                roomsByClient.remove(memberId);
+            }
+            roomNames.remove(roomId);
+            roomCapacities.remove(roomId);
+            roomOwners.remove(roomId);
+            closedRooms.remove(roomId);
+            rooms.remove(roomId);
+        }
+        
+    }
+    
+    protected void addActiveClient(String clientId) {
+        activeClients.put(clientId, true);
+    }
+    
+    protected void removeActiveClient(String clientId) {
+        activeClients.remove(clientId);
+        if (roomsByClient.containsKey(clientId)) {
+            String roomId = roomsByClient.get(clientId);
+            roomsByClient.remove(clientId);
+            ConcurrentHashMap<String, Boolean> members = rooms.get(roomId);
+            if (members != null) members.remove(clientId);
+            roomOwners.remove(clientId);
+        }
+    }
+    
     private RoomInfo getRoomInfo(String str) {
         Scanner reader = new Scanner(str);
         String id = reader.next();
         String name = reader.next();
         int capacity = reader.nextInt();
+        String ownerId = reader.next();
+        if (ownerId.equals("null")) ownerId = null;
+        boolean isClosed = reader.nextBoolean();
         Set<String> members = new HashSet<>();
         while (reader.hasNext()) {
             members.add(reader.next());
         }
-        return new RoomInfo(id, name, capacity, members);
+        return new RoomInfo(id, name, capacity, members, ownerId, isClosed);
     }
-
+    
     /**
      * Returns true if this client is currently connected to the server and false otherwise.
      * @return true if this client is currently connected to the server and false otherwise.
@@ -286,7 +451,7 @@ public class GameClient implements Runnable {
      * sets the connection status of this client to the server.
      * @param connected whether this client is connected to the server
      */
-    private synchronized void setIsConnected(boolean connected) {
+    private void setIsConnected(boolean connected) {
         isConnected = connected;
         if(!isConnected && eventHandler != null)  eventHandler.onDisconnected(this);
     }
@@ -297,6 +462,46 @@ public class GameClient implements Runnable {
 
     public ClientEventHandler getEventHandler() {
         return eventHandler;
+    }
+    
+    public String getRoomName(String roomId) {
+        return roomNames.get(roomId);
+    }
+    
+    public Set<String> getRoomIds() {
+        return new HashSet<>(rooms.keySet());
+    }
+    
+    public Set<String> getClientIds() {
+        return new HashSet<>(activeClients.keySet());
+    }
+    
+    public String getIdOfRoomContainingClient(String clientId) {
+        return roomsByClient.get(clientId);
+    }
+    
+    public String getCurrentRoomId() {
+        return getIdOfRoomContainingClient(id);
+    }
+    
+    public Set<String> getClientsInRoom(String roomId) {
+        return new HashSet<>(rooms.get(roomId).keySet());
+    }
+    
+    public int getRoomCapacity(String roomId) {
+        return roomCapacities.get(roomId);
+    }
+    
+    public String getRoomOwner(String roomId) {
+        return roomOwners.get(roomId);
+    }
+    
+    public boolean roomIsClosed(String roomId) {
+        return closedRooms.containsKey(roomId);
+    }
+    
+    public Set<String> getClosedRooms() {
+        return new HashSet<>(closedRooms.keySet());
     }
 
 }

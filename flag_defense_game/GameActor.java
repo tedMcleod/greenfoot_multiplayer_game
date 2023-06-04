@@ -4,16 +4,10 @@ public abstract class GameActor extends Actor {
     
     private String actorId;
     private String clientId;
-    private RoomInfo room;
     
     public GameActor(String actorId, String clientId) {
-        this(actorId, clientId, null);
-    }
-    
-    public GameActor(String actorId, String clientId, RoomInfo room) {
         this.actorId = actorId;
         this.clientId = clientId;
-        this.room = room;
     }
     
     public String getActorId() {
@@ -22,10 +16,6 @@ public abstract class GameActor extends Actor {
     
     public String getClientId() {
         return clientId;
-    }
-    
-    public RoomInfo getRoom() {
-        return room;
     }
     
     public void onDestroy(GameWorld world) {
@@ -39,12 +29,12 @@ public abstract class GameActor extends Actor {
             onDestroy(gw);
             if (gw.getClient() != null && gw.getClient().isConnected()) {
                 String msg = "DESTROY " + getActorId();
-                if (room == null) {
+                String roomId = gw.getClient().getCurrentRoomId();
+                if (roomId == null) {
                     gw.getClient().broadcastMessage(msg);
                 } else {
-                    gw.getClient().broadcastMessageToRoom(msg, room.getId());
+                    gw.getClient().broadcastMessageToRoom(msg, roomId);
                 }
-                
             }
         }
     }
@@ -52,10 +42,11 @@ public abstract class GameActor extends Actor {
     public void broadcastMessage(String msg) {
         GameWorld gw = getWorldOfType(GameWorld.class);
         if (gw != null && gw.getClient() != null) {
-            if (getRoom() == null) {
+            String roomId = gw.getClient().getCurrentRoomId();
+            if (roomId == null) {
                 gw.getClient().broadcastMessage(msg);
             } else {
-                gw.getClient().broadcastMessageToRoom(msg, getRoom().getId());
+                gw.getClient().broadcastMessageToRoom(msg, roomId);
             }
         }
     }

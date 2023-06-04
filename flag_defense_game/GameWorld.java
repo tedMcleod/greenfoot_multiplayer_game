@@ -3,14 +3,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 public abstract class GameWorld extends World {
-    JavaFXClient client;
+    GameClient client;
 
     public GameWorld(int width, int height, int cellSize, boolean bounded) {    
         // Create a new world with 600x400 cells with a cell size of 1x1 pixels.
         super(width, height, cellSize, bounded);
     }
     
-    public void setClient(JavaFXClient client) {
+    public void setClient(GameClient client) {
         this.client = client;
         GreenfootEventHandler eh = (GreenfootEventHandler)client.getEventHandler();
         if (eh != null) {
@@ -18,7 +18,7 @@ public abstract class GameWorld extends World {
         }
     }
 
-    public JavaFXClient getClient() {
+    public GameClient getClient() {
         return client;
     }
 

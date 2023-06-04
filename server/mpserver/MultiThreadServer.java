@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MultiThreadServer implements Runnable {
 
@@ -34,6 +33,9 @@ public class MultiThreadServer implements Runnable {
     // Each key is a client id, and each value is the id of the room the client is in
     // if not in a room, the client will not be in this map
     private ConcurrentHashMap<String, String> roomsByClient = new ConcurrentHashMap<>();
+    
+    private ConcurrentHashMap<String, String> roomOwners = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Boolean> closedRooms = new ConcurrentHashMap<>();
     
     private final int MAX_ROOMS;
     
@@ -73,9 +75,9 @@ public class MultiThreadServer implements Runnable {
      * @param id the id of the client
      * @param sock the client socket
      */
-    private synchronized void addClient(String id, Socket sock) {
+    private void addClient(String id, Socket sock) {
         activeClients.put(id, sock);
-        sendMessage(id + " ID", id);
+        sendMessage(id + " ID " + getClientInitState(), id);
     }
     
     public void removeClient(String clientId) {
@@ -117,20 +119,54 @@ public class MultiThreadServer implements Runnable {
      * @param capacity the maximum number of clients allowed to join the room (if < 1, it will be set to 1)
      * @return true if the room was successfully created and false otherwise (i.e. max rooms was reached)
      */ 
-    public synchronized boolean addRoom(String roomName, int capacity) {
+    public boolean addRoom(String roomName, int capacity) {
         if (rooms.size() < MAX_ROOMS) {
-            // remove all commas and spaces from room name
+            // remove all pipes '|', commas ',' and spaces ' ' from room name
             if (capacity < 1) capacity = 1;
-            roomName = roomName.replaceAll("\\s", "");
+            roomName = roomName.replaceAll("[\\s|,]", "");
             String roomId = generateUUID();
             rooms.put(roomId, new ConcurrentHashMap<>());
             roomNames.put(roomId, roomName);
             roomCapacities.put(roomId, capacity);
-            broadcast("ROOM_ADDED " + roomId + " " + roomName + " " + capacity);
+            broadcast("ROOM_ADDED " + roomId + " " + roomName + " " + capacity + " " + null + " " + false);
             return true;
         } else {
             return false;
         }
+    }
+    
+    public String getClientInitState() {
+        return getKeysStr(activeClients) + "|" + getRoomsStr() + "|" + MAX_ROOMS;
+    }
+    
+    private <T> String getKeysStr(Map<T, ?> map) {
+        String str = "";
+        for (T key : map.keySet()) {
+            str += key + " ";
+        }
+        return str;
+    }
+    
+    private String getRoomsStr() {
+        String msg = "";
+        for (Map.Entry<String, ConcurrentHashMap<String, Boolean>> roomEntry : rooms.entrySet()) {
+            String roomId = roomEntry.getKey();
+            ConcurrentHashMap<String, Boolean> members = roomEntry.getValue();
+            String roomName = roomNames.get(roomId);
+            int capacity = roomCapacities.get(roomId);
+            String ownerId = null;
+            if (roomOwners.containsKey(roomId)) {
+                ownerId = roomOwners.get(roomId);
+            }
+            boolean closed = closedRooms.containsKey(roomId);
+            msg += " " + roomId + " " + roomName + " " + capacity + " " + ownerId + " " + closed;
+            for (String clientId : members.keySet()) {
+                msg += " " + clientId;
+            }
+            msg += " ,";
+        }
+        if (rooms.entrySet().size() > 0) msg = msg.substring(0, msg.length() - 2);
+        return msg;
     }
 
     /**
@@ -153,21 +189,27 @@ public class MultiThreadServer implements Runnable {
      * 
      * @param toId the id of the client to send the room info to
      */
-    public synchronized void sendRoomsInfo(String toId) {
-        String msg = "ROOMS_INFO";
-        for (Map.Entry<String, ConcurrentHashMap<String, Boolean>> roomEntry : rooms.entrySet()) {
-            String roomId = roomEntry.getKey();
-            ConcurrentHashMap<String, Boolean> members = roomEntry.getValue();
-            String roomName = roomNames.get(roomId);
-            int capacity = roomCapacities.get(roomId);
-            msg += " " + roomId + " " + roomName + " " + capacity;
-            for (String clientId : members.keySet()) {
-                msg += " " + clientId;
-            }
-            msg += " ,";
-        }
-        sendMessage(msg, toId);
-    }
+    // public void sendRoomsInfo(String toId) {
+        // String msg = "ROOMS_INFO";
+        // for (Map.Entry<String, ConcurrentHashMap<String, Boolean>> roomEntry : rooms.entrySet()) {
+            // String roomId = roomEntry.getKey();
+            // ConcurrentHashMap<String, Boolean> members = roomEntry.getValue();
+            // String roomName = roomNames.get(roomId);
+            // int capacity = roomCapacities.get(roomId);
+            // String ownerId = null;
+            // if (roomOwners.containsKey(roomId)) {
+                // ownerId = roomOwners.get(roomId);
+            // }
+            // boolean closed = closedRooms.containsKey(roomId);
+            
+            // msg += " " + roomId + " " + roomName + " " + capacity + " " + ownerId + " " + closed;
+            // for (String clientId : members.keySet()) {
+                // msg += " " + clientId;
+            // }
+            // msg += " ,";
+        // }
+        // sendMessage(msg, toId);
+    // }
 
     /**
      * <p>
@@ -188,15 +230,16 @@ public class MultiThreadServer implements Runnable {
      * 
      * @param roomId the id of the room to remove
      */
-    public synchronized void removeRoom(String roomId) {
+    public void removeRoom(String roomId) {
         if (rooms.containsKey(roomId)) {
-            ArrayList<String> clients = new ArrayList<>(rooms.get(roomId).keySet());
-            for (String clientId : clients) {
+            for (String clientId : rooms.get(roomId).keySet()) {
                 leaveRoom(clientId);
             }
             rooms.remove(roomId);
             roomNames.remove(roomId);
             roomCapacities.remove(roomId);
+            roomOwners.remove(roomId);
+            closedRooms.remove(roomId);
             broadcast("ROOM_REMOVED " + roomId);
         }
     }
@@ -242,13 +285,21 @@ public class MultiThreadServer implements Runnable {
      * @param clientId the id of the client joining the room
      * @param roomId the id of the room the client is joining
      */
-    public synchronized void joinRoom(String clientId, String roomId) {
+    public void joinRoom(String clientId, String roomId) {
         if (rooms.containsKey(roomId)) {
             ConcurrentHashMap<String, Boolean> members = rooms.get(roomId);
-            if (members.size() < roomCapacities.get(roomId)) {
+            boolean isOwner = false;
+            if (members.size() == 0 && roomCapacities.get(roomId) > 0 && !closedRooms.containsKey(roomId)) {
+                roomOwners.put(roomId, clientId);
+                isOwner = true;
+            }
+            if (closedRooms.containsKey(roomId)) {
+                sendMessage("JOIN_ROOM_FAIL CLOSED " + roomId, clientId);
+            } else if (members.size() < roomCapacities.get(roomId)) {
                 members.put(clientId, true);
                 roomsByClient.put(clientId, roomId);
                 broadcast("JOINED_ROOM " + clientId + " " + roomId);
+                if (isOwner) broadcast("ROOM_OWNER " + roomId + " " + clientId);
             } else {
                 sendMessage("JOIN_ROOM_FAIL FULL " + roomId, clientId);
             }
@@ -271,13 +322,41 @@ public class MultiThreadServer implements Runnable {
      * 
      * @param clientId the id of the client leaving the room
      */
-    public synchronized void leaveRoom(String clientId) {
+    public void leaveRoom(String clientId) {
         if (roomsByClient.containsKey(clientId)) {
             String roomId = roomsByClient.get(clientId);
             ConcurrentHashMap<String, Boolean> roomRoster = rooms.get(roomId);
             roomRoster.remove(clientId);
             roomsByClient.remove(clientId);
+            String newOwnerId = null;
+            if (roomOwners.containsKey(roomId) && roomOwners.get(roomId).equals(clientId)) {
+                if (roomRoster.size() > 0) {
+                    roomOwners.put(roomId, roomRoster.keys().nextElement());
+                } else {
+                    roomOwners.remove(roomId);
+                }
+            }
             broadcast("LEFT_ROOM " + clientId + " " + roomId);
+            if (newOwnerId != null) {
+                broadcast("ROOM_OWNER " + roomId + " " + newOwnerId);
+            }
+            if (roomRoster.size() == 0 && closedRooms.containsKey(roomId)) {
+                openRoom(roomId);
+            }
+        }
+    }
+    
+    public void closeRoom(String roomId) {
+        if (rooms.containsKey(roomId)) {
+            closedRooms.put(roomId, true);
+            broadcast("ROOM_CLOSED " + roomId);
+        }
+    }
+    
+    public void openRoom(String roomId) {
+        if (rooms.containsKey(roomId)) {
+            closedRooms.remove(roomId);
+            broadcast("ROOM_OPENED " + roomId);
         }
     }
 
@@ -305,9 +384,9 @@ public class MultiThreadServer implements Runnable {
      * 
      * @param message the message
      */
-    public synchronized void broadcast(String message) {
-        for (Map.Entry<String, Socket> entry : activeClients.entrySet()) {
-            sendMessage(message, entry.getKey());
+    public void broadcast(String message) {
+        for (String clientId : activeClients.keySet()) {
+            sendMessage(message, clientId);
         }
     }
 
@@ -317,7 +396,7 @@ public class MultiThreadServer implements Runnable {
      * @param message the message
      * @param fromId the client id of the sender
      */
-    public synchronized void broadcast(String message, String fromId) {
+    public void broadcast(String message, String fromId) {
         for (Map.Entry<String, Socket> entry : activeClients.entrySet()) {
             if (!fromId.equals(entry.getKey())) sendMessage(message, entry.getKey());
         }
@@ -330,10 +409,9 @@ public class MultiThreadServer implements Runnable {
      * @param message the message
      * @param roomId the id of the room to send the message to
      */
-    public synchronized void roomBroadcast(String message, String roomId) {
+    public void roomBroadcast(String message, String roomId) {
         if (rooms.containsKey(roomId)) {
-            Set<String> members = rooms.get(roomId).keySet();
-            for (String toId : members) {
+            for (String toId : rooms.get(roomId).keySet()) {
                 sendMessage(message, toId);
             }
         }
@@ -348,10 +426,9 @@ public class MultiThreadServer implements Runnable {
      * @param fromId the client id of the sender
      * @return true if a room with the given id exists and false otherwise 
      */
-    public synchronized void roomBroadcast(String message, String roomId, String fromId) {
+    public void roomBroadcast(String message, String roomId, String fromId) {
         if (rooms.containsKey(roomId)) {
-            Set<String> members = rooms.get(roomId).keySet();
-            for (String toId : members) {
+            for (String toId : rooms.get(roomId).keySet()) {
                 if (!fromId.equals(toId)) {
                     sendMessage(message, toId);
                 }

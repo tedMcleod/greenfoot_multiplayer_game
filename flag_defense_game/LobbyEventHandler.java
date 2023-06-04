@@ -14,41 +14,11 @@ public class LobbyEventHandler extends GreenfootEventHandler {
     }
     
     @Override
-    public void onIdAssigned(String clientId, GameClient client) {
-        LobbyWorld lw = (LobbyWorld)getWorld();
-        lw.setNeedsUpdate();
-    }
-
-    @Override
-    public void handleRoomsInfo(Set<RoomInfo> rooms, GameClient client) {
-        LobbyWorld lw = (LobbyWorld)getWorld();
-        lw.updateRooms(rooms);
-    }
-
-    @Override
-    public void handleRoomAdded(RoomInfo room, GameClient client) {
-        client.getRooms();
-    }
-
-    @Override
-    public void handleRoomRemoved(String roomId, GameClient client) {
-        client.getRooms();
-    }
-    
-    @Override
     public void handleClientJoinedRoom(String clientId, String roomId, GameClient client) {
-        client.getRooms();
+        if (clientId.equals(client.getId())) {
+            LobbyWorld lw = (LobbyWorld)getWorld();
+            lw.setIdOfRoomToJoin(roomId);
+        }
     }
-    
-    @Override
-    public void handleJoinRoomFailed(String reason, String roomId, GameClient client) {
-        if (Debug.DEBUG) System.out.println("Failed to join room " + roomId + " because " + reason);
-    }
-    
-    @Override
-    public void handleClientLeftRoom(String clientId, String roomId, GameClient client) {
-        client.getRooms();
-    }
-    
 }
 

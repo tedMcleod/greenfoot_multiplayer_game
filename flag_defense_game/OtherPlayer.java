@@ -30,7 +30,7 @@ public class OtherPlayer extends GameActor {
     public void onHit() {
         BattleMapWorld bw = (BattleMapWorld)getWorld();
         if (bw != null && bw.getClient() != null) {
-            bw.getClient().broadcastMessageToRoom("HIT " + getActorId(), bw.getRoom().getId());
+            broadcastMessage("HIT " + getActorId());
         }
     }
 }

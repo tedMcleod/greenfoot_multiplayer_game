@@ -57,10 +57,14 @@ public class ClientThread implements Runnable {
                     } else if (first.equals("JOIN_ROOM")) {
                         String roomId = reader.next();
                         server.joinRoom(id, roomId);
+                    } else if (first.equals("CLOSE_ROOM")) {
+                        String roomId = reader.next();
+                        server.closeRoom(roomId);
+                    } else if (first.equals("OPEN_ROOM")) {
+                        String roomId = reader.next();
+                        server.openRoom(roomId);
                     } else if (first.equals("LEAVE_ROOM")) {
                         server.leaveRoom(id);
-                    } else if (first.equals("GET_ROOMS")) {
-                        server.sendRoomsInfo(id);
                     } else {
                         server.broadcast(id + " " + cmd, id);
                     }

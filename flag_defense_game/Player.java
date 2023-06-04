@@ -120,7 +120,7 @@ public class Player extends LocalActor {
         BattleMapWorld bw = (BattleMapWorld)getWorld();
         bw.setPlayerWon(bw.getClient().getId());
         bw.updateGameHud();
-        bw.getClient().broadcastMessageToRoom("WIN", bw.getRoom().getId());
+        broadcastMessage("WIN");
     }
     
     public void incrementFlagTime() {

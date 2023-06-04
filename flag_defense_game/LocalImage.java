@@ -25,39 +25,39 @@ public class LocalImage extends GreenfootImage {
         return actor;
     }
     
+    public void broadcast(String message) {
+        GameWorld gw = actor.getWorldOfType(GameWorld.class);
+        if (gw != null && gw.getClient() != null) {
+            String roomId = gw.getClient().getCurrentRoomId();
+            if (roomId == null) {
+                gw.getClient().broadcastMessage(message);
+            } else {
+                gw.getClient().broadcastMessageToRoom(message, roomId);
+            }
+        }
+    }
+    
     @Override
     public void setTransparency(int t) {
         super.setTransparency(t);
-        GameWorld gw = actor.getWorldOfType(GameWorld.class);
-        if (gw != null && gw.getClient() != null) {
-            gw.getClient().broadcastMessage(GreenfootEventHandler.CMD_TRANSPARENCY + " " + actor.getActorId() + " " + t);
-        }
+        broadcast(GreenfootEventHandler.CMD_TRANSPARENCY + " " + actor.getActorId() + " " + t);
     }
     
     @Override
     public void mirrorHorizontally() {
         super.mirrorHorizontally();
-        GameWorld gw = actor.getWorldOfType(GameWorld.class);
-        if (gw != null && gw.getClient() != null) {
-            gw.getClient().broadcastMessage(GreenfootEventHandler.CMD_MIRROR_H + " " + actor.getActorId());
-        }
+        broadcast(GreenfootEventHandler.CMD_MIRROR_H + " " + actor.getActorId());
     }
     
     @Override
     public void mirrorVertically() {
         super.mirrorVertically();
-        GameWorld gw = actor.getWorldOfType(GameWorld.class);
-        if (gw != null && gw.getClient() != null) {
-            gw.getClient().broadcastMessage(GreenfootEventHandler.CMD_MIRROR_V + " " + actor.getActorId());
-        }
+        broadcast(GreenfootEventHandler.CMD_MIRROR_V + " " + actor.getActorId());
     }
     
     @Override
     public void scale(int width, int height) {
         super.scale(width, height);
-        GameWorld gw = actor.getWorldOfType(GameWorld.class);
-        if (gw != null && gw.getClient() != null) {
-            gw.getClient().broadcastMessage(GreenfootEventHandler.CMD_SCALE + " " + actor.getActorId() + " " + width + " " + height);
-        }
+        broadcast(GreenfootEventHandler.CMD_SCALE + " " + actor.getActorId() + " " + width + " " + height);
     }
 }

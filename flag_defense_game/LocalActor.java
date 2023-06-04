@@ -23,11 +23,7 @@ public abstract class LocalActor extends GameActor {
     private Class<? extends GameActor> otherClass;
     
     public LocalActor(String clientId) {
-        this(clientId, null);
-    }
-    
-    public LocalActor(String clientId, RoomInfo room) {
-        super(UUID.randomUUID().toString(), clientId, room);
+        super(UUID.randomUUID().toString(), clientId);
         // replace default GreenfootImage with a LocalImage
         setImage(new LocalImage(getImage(), this));
     }
