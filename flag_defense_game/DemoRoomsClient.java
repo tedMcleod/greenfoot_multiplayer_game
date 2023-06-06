@@ -27,12 +27,14 @@ public class DemoRoomsClient extends GameClient {
         return userNames.get(clientId);
     }
     
+    @Override
     protected void setId(String id, String state) {
         userNames.put(id, userName);
         super.setId(id, state);
         broadcastMessage(CMD_USERNAME + " " + userName);
     }
     
+    @Override
     protected void processCommand(String command) {
         if (Debug.DEBUG) System.out.println("DemoClient processing: " + command);
         Scanner scan = new Scanner(command);
