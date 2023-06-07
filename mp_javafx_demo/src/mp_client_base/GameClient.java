@@ -556,6 +556,7 @@ public class GameClient implements Runnable {
      * @return the room this client is currently in.
      */
     public String getCurrentRoomId() {
+    	if (id == null) return null;
         return getIdOfRoomContainingClient(id);
     }
     
