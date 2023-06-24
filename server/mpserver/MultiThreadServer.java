@@ -331,7 +331,8 @@ public class MultiThreadServer implements Runnable {
             String newOwnerId = null;
             if (roomOwners.containsKey(roomId) && roomOwners.get(roomId).equals(clientId)) {
                 if (roomRoster.size() > 0) {
-                    roomOwners.put(roomId, roomRoster.keys().nextElement());
+                    newOwnerId = roomRoster.keys().nextElement();
+                    roomOwners.put(roomId, newOwnerId);
                 } else {
                     roomOwners.remove(roomId);
                 }
