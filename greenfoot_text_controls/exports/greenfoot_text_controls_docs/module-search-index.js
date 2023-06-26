@@ -1,0 +1,1 @@
+moduleSearchIndex = [{"l":"greenfoot_text_controls"}]
