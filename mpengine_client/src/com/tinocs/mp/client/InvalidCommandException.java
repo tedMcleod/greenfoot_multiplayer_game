@@ -3,7 +3,7 @@ package com.tinocs.mp.client;
 public class InvalidCommandException extends RuntimeException {
 
 	/**
-	 * 
+	 * An exception indicating an invalid command was received.
 	 */
 	private static final long serialVersionUID = 3782021245618537266L;
 

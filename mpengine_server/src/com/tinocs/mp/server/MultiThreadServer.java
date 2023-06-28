@@ -62,12 +62,19 @@ public class MultiThreadServer implements Runnable {
     /**
      * <p>
      * Adds a client socket to the map of active clients and sends a message
-     * to the client that says id ID. here is an example message assigning
-     * a client the id <b>33bf1674-cdab-490a-acdc-f04fce318ead</b>:
+     * to the client informing them of their id and the state of the server.
+     * Here is an example message assigning
+     * a client the id <b>20ce60c2-0822-4154-95c4-b22ba4f28254</b>:
      * </p>
      * <pre>
-     * 33bf1674-cdab-490a-acdc-f04fce318ead ID
+     * 20ce60c2-0822-4154-95c4-b22ba4f28254 ID ae3af79d-67fc-45bf-b3d4-1542323e240f 20ce60c2-0822-4154-95c4-b22ba4f28254 ||2147483647
      * </pre>
+     * 
+     * This says the client has been assigned id 20ce60c2-0822-4154-95c4-b22ba4f28254 and the clients connected at the moment are:
+     * <b>ae3af79d-67fc-45bf-b3d4-1542323e240f</b> and <b>20ce60c2-0822-4154-95c4-b22ba4f28254</b>
+     * 
+     * || means there are currently no rooms because all the room info would be listed between | and |
+     * 2147483647 is the maximum number of rooms (in this case it is Integer.MAX_VALUE)
      * 
      * @param id the id of the client
      * @param sock the client socket
@@ -77,18 +84,28 @@ public class MultiThreadServer implements Runnable {
         sendMessage(id + " ID " + getClientInitState(), id);
     }
     
+    /**
+     * Remove the client with the given id. This is done once the client
+     * has closed the socket.
+     * @param clientId
+     */
     public void removeClient(String clientId) {
-        activeClients.remove(clientId);
-        leaveRoom(clientId);
-        broadcast(clientId + " DC");
-        System.out.println("Client disconnected: " + clientId);
+    	if (activeClients.containsKey(clientId)) {
+    		activeClients.remove(clientId);
+	        leaveRoom(clientId);
+	        broadcast(clientId + " DC");
+	        System.out.println("Client disconnected: " + clientId);
+    	}
     }
 
     /** 
      * <p>
      * Creates a room with the given room name and broadcasts the id of the created room
-     * If the name contains white space characters such as space, tab or new line, they will be removed.
-     * The broadcast will be in the form ROOM_ADDED roomId roomName capacity
+     * If the name contains white space characters such as space, tab or new line, or 
+     * illegal room name characters '|' or ',' they will be removed.
+     * The broadcast will be in the form ROOM_ADDED roomId roomName capacity null false
+     * where null represents the ownerId (null because there can't be an owner yet)
+     * and false indicates the room is not closed (it always starts out open)
      * </p>
      * 
      * <p>
@@ -97,7 +114,7 @@ public class MultiThreadServer implements Runnable {
      * </p>
      * 
      * <pre>
-     * ROOM_ADDED c9a5de7c-7828-44dc-8fcc-da7a6a2f55dd HappyHome 6
+     * ROOM_ADDED c9a5de7c-7828-44dc-8fcc-da7a6a2f55dd HappyHome 6 null false
      * </pre>
      * <p>
      * Note that if the MAX_ROOMS cap would be exceeded by this room, this method will return false
@@ -132,6 +149,7 @@ public class MultiThreadServer implements Runnable {
         }
     }
     
+    /** returns a string describing the state of the server in the form used to pass to the clients */
     public String getClientInitState() {
         return getKeysStr(activeClients) + "|" + getRoomsStr() + "|" + MAX_ROOMS;
     }
@@ -301,6 +319,18 @@ public class MultiThreadServer implements Runnable {
         }
     }
     
+    /**
+     * Closes the room with the given roomId which will prevent clients from joining the room.
+     * This can be useful if you don't want clients to be able to join a room while a game is in
+     * progress or for any other reason. A message will be sent to all clients on the server
+     * announcing the room in closed in the form ROOM_CLOSED roomId.
+ 	 * <p>For example, if a room with id
+     * 33efb9ac-b905-4676-ac2f-ea345313d137 was closed, the message would say:</p>
+     * <pre>
+     * ROOM_CLOSED 33efb9ac-b905-4676-ac2f-ea345313d137
+     * </pre>
+     * @param roomId the id of the room to close
+     */
     public void closeRoom(String roomId) {
         if (rooms.containsKey(roomId)) {
             closedRooms.put(roomId, true);
@@ -308,8 +338,22 @@ public class MultiThreadServer implements Runnable {
         }
     }
     
+    /**
+     * Opens a room with the given roomId that was previously closed.
+     * Passing a roomId of a room that is not closed will have no effect.
+     * If the room was previously closed and is now open, a message will
+     * be broadcast to all clients announcing the room is open in the form:
+     * ROOM_OPENED roomId
+     * <p>For example, if a room with id 
+     * 33efb9ac-b905-4676-ac2f-ea345313d137 was opened, the message would say:</p>
+     * <pre>
+     * ROOM_OPENED 33efb9ac-b905-4676-ac2f-ea345313d137
+     * </pre>
+     * 
+     * @param roomId the id of the room to open
+     */
     public void openRoom(String roomId) {
-        if (rooms.containsKey(roomId)) {
+        if (closedRooms.containsKey(roomId)) {
             closedRooms.remove(roomId);
             broadcast("ROOM_OPENED " + roomId);
         }
@@ -391,14 +435,29 @@ public class MultiThreadServer implements Runnable {
         }
     }
     
+    /**
+     * Send a message indicating an invalid command was received. For example, if a command
+     * started out with <b>JOIN_ROOM</b> but was not followed by a string representing the roomId,
+     * this message would be sent back.
+     * @param cmd the command
+     * @param toId the id of the client to send this error to (the one who sent the invalid command)
+     */
     public void sendInvalidCommandErrorMessage(String cmd, String toId) {
     	sendMessage("INVALID_CMD " + cmd, toId);
     }
 
+    /**
+     * generate and return a random unique id.
+     * @return a randomly generated unique id.
+     */
     public static String generateUUID() {
         return UUID.randomUUID().toString();
     }
 
+    /**
+     * The main loop that listens for and accepts connections.
+     * Each connected client is listened to on a new thread.
+     */
     @Override
     public void run(){
         try {

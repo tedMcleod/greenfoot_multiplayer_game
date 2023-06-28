@@ -6,5 +6,5 @@ open module greenfoot_eclipse_base {
 	requires javafx.media;
 	requires javafx.web;
 	requires javafx.swing;
-	requires base.greenfoot.proj;
+	requires base.greenfoot.v371;
 }

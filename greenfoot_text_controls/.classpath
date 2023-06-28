@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/base_greenfoot_proj.jar">
+	<classpathentry kind="lib" path="C:/Users/ted_mcleod/bitbucket_projects/mpengine/greenfoot_text_controls/lib/base_greenfoot_v371.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>

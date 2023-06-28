@@ -1,15 +1,21 @@
 package com.tinocs.mp.client;
 
 /**
- * The ClientEventHandler interface provides methods for responding to messages sent to the GameClient.
+ * The ClientEventHandler interface provides methods for responding to messages from the server
+ * or from other clients.
  * 
  * @author Ted McLeod 
  * @version 6/6/2023
  */
 public interface ClientEventHandler {
     
+	/** Joining a room failed because the room was full*/
     String ROOM_FULL = "FULL";
+    
+    /** Joining a room failed because the room was closed*/
     String ROOM_CLOSED = "CLOSED";
+    
+    /** Joining a room failed because the room does not exist*/
     String NO_SUCH_ROOM = "NO_SUCH_ROOM";
     
     /**
@@ -29,7 +35,7 @@ public interface ClientEventHandler {
 
     /**
      * This method is called when this client is disconnected from the server.
-     * Subclasses should override this method to take actions after the client
+     * Subclasses should override this method to take actions after this client
      * has been disconnected.
      * @param client the client the command was received by
      */
@@ -85,9 +91,9 @@ public interface ClientEventHandler {
     /**
      * Called when an attempt by the client with this event handler to join a room fails. The reason given could be:
      * <ul>
-     * 	<li>ROOM_FULL</li>
-     * <li>ROOM_CLOSED</li>
-     * <li>NO_SUCH_ROOM</li>
+     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#ROOM_FULL}</li>
+     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#ROOM_CLOSED}</li>
+     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#NO_SUCH_ROOM}</li>
      * </ul>
      * @param reason the reason given for failure
      * @param roomId the id of the room
@@ -114,7 +120,6 @@ public interface ClientEventHandler {
     
     /**
      * Called when a room is closed (blocking clients from joining).
-     * You should close a room before starting a game so players cannot join after the game started.
      * @param roomId the id of the room that was closed
      * @param client the client that received this command
      */
@@ -122,7 +127,6 @@ public interface ClientEventHandler {
     
     /**
      * Called when a room is opened (allowing clients to join)
-     * You should close a room before starting a game so players cannot join after the game started.
      * @param roomId the id of the room that was closed
      * @param client the client that received this command
      */

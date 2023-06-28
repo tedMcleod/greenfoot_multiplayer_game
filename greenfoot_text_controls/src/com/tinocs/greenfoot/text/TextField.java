@@ -62,6 +62,7 @@ public class TextField extends Text {
 
     /**
      * Create a blank TextField with the given width.
+     * 
      * @param width the width of the text field
      */
     public TextField(int width) {

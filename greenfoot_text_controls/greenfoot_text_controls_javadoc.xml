@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" additionalparam="--module-path &quot;C:\Program Files\Greenfoot\lib\javafx\lib&quot;;&quot;C:\Users\ted_mcleod\bitbucket_projects\mpengine\greenfoot_text_controls\lib&quot;; " author="true" classpath="C:\Program Files\Greenfoot\lib\javafx\lib\javafx-swt.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.graphics.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.swing.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.web.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.fxml.jar;lib/base_greenfoot_v371.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.base.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.media.jar;C:\Program Files\Greenfoot\lib\javafx\lib\javafx.controls.jar" destdir="exports/greenfoot_text_controls_docs" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="com.tinocs.greenfoot.text" source="11" sourcepath="src" splitindex="true" use="true" version="true"/>
+    </target>
+</project>

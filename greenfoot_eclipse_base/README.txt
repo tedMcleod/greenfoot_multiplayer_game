@@ -3,7 +3,8 @@ To use this project, you should:
 1. make a copy of this project
 2. Create classes in the scenario package. Just like in greenfoot, you will generally make classes
    that inherit from World or Actor, but you are not restricted to that. You can even make other
-   packages if you wish.
+   packages if you wish. If you make other packages, just be aware that you won't be able to have
+   those packages if you were to copy your project into a real greenfoot project.
 3. If you want to change which world will be the starting world, open standalone.properties and change
    the main.class property to the full name of your World class. For example, if you have
    a class named TitleWorld in a package named scenario, you would write:

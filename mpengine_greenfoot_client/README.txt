@@ -1,0 +1,1 @@
+To build a jar, simply double click (open) the build_mpengine_greenfoot_client.jardesc file in eclipse.

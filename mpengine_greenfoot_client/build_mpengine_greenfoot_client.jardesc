@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="mpengine_greenfoot_client/exports/mpengine_greenfoot_client_v1.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/mpengine_greenfoot_client/build_mpengine_greenfoot_client.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=mpengine_client/src&lt;com.tinocs.mp.client{ClientEventHandler.java"/>
+        <javaElement handleIdentifier="=mpengine_client/src&lt;com.tinocs.mp.client{RoomInfo.java"/>
+        <javaElement handleIdentifier="=mpengine_client/src&lt;com.tinocs.mp.client{Client.java"/>
+        <javaElement handleIdentifier="=mpengine_greenfoot_client/src&lt;com.tinocs.mp.greenfoot"/>
+        <javaElement handleIdentifier="=mpengine_client/src&lt;com.tinocs.mp.client{InvalidCommandException.java"/>
+    </selectedElements>
+</jardesc>

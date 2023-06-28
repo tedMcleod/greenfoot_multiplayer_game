@@ -12,11 +12,41 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The Client class controls the client's connection to the server. It handles writing and reading data
+ * <p>The Client class controls the client's connection to the server. It handles writing and reading data
  * to and from the server. The server will pass on those messages to other clients as directed. This class
- * also replicates data stored on the server about other clients and rooms. Any messages received can be
- * handled by setting the event handler to an instance of a class that implements the ClientEventHandler
- * interface.
+ * also replicates data stored on the server about other clients and rooms. To handle messages received,
+ * call the {@link #setEventHandler(ClientEventHandler)} method and pass an instance of a class you wrote
+ * that implements the {@link com.tinocs.mp.client.ClientEventHandler} interface.
+ * 
+ * <p>Any commands sent from one client to one or more other clients will start with the id of the sender.</p>
+ * 
+ * <p>Messages being sent directly from the server rather than from another client are all handled by calling the
+ *    appropriate method from the {@link com.tinocs.mp.client.ClientEventHandler} interface. For example, if you want
+ *    to do some action as soon as your client is assigned an id by the server, you can override the method
+ *    {@link com.tinocs.mp.client.ClientEventHandler#onIdAssigned(String, Client)}. Or, if you wanted to do something
+ *    when another client joins, override the method handleOtherClientJoined(String clientId, Client client). See
+ *    {@link com.tinocs.mp.client.ClientEventHandler} for more information and for a complete list of events.<p>
+ * 
+ * Example Usage:
+<pre>
+
+// Define the class that implements ClientEventHandler
+public class GameHandler implements ClientEventHandler {
+
+	@Override
+	public void handleCommand(String command, Client client) {
+		// Parse the command and take actions accordingly.
+		// Try first printing the command to see what commands look like.
+		System.out.println(command);
+	}
+}
+
+// In a different class, when ready to connect:
+Client client = new Client("192.68.0.1", 1234);
+client.setEventHandler(new GameHandler());
+client.start(); // nothing will happen until start() is called
+</pre>
+ * 
  * 
  * @author Ted McLeod 
  * @version 5/7/2023 
