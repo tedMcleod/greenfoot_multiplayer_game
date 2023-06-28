@@ -4,6 +4,7 @@ package mp_demo_game;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.tinocs.mp.client.Client;
 import com.tinocs.mp.javafxengine.LocalActor;
 
 import javafx.scene.image.PixelReader;
@@ -20,14 +21,13 @@ public class Player extends LocalActor {
 	private int[] rgb;
 	private double blueMult;
 	
-	public Player(String clientId) {
-		super(clientId);
+	public Player(Client client) {
+		super(client, OtherPlayer.class);
 		setImage("resources/CharacterLeft_Standing.png");
 		setFitWidth(40);
 		setFitHeight(40);
 		dx = 0;
 		dy = 0;
-		setOtherClass(OtherPlayer.class);
 		rgb = getRandomRGBFilter();
 		blueMult = getRandomBlueMultiplier();
 		filterImage();

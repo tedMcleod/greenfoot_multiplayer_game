@@ -44,7 +44,7 @@ public class DemoEngineEventHandler extends JavafxEngineEventHandler {
 	@Override
 	public void onIdAssigned(String clientId, Client client) {
 		super.onIdAssigned(clientId, client);
-		Player p = new Player(client.getId());
+		Player p = new Player(client);
 		client.broadcastMessage(CMD_COLORS + " " + p.getRGBFilter()[0] + " " + p.getRGBFilter()[1] + " " + p.getRGBFilter()[2] + " " + p.getBlueMultiplier());
 		p.setX(getWorld().getWidth() / 2);
 		p.setY(getWorld().getHeight() - p.getHeight());
