@@ -1,10 +1,6 @@
 package com.tinocs.mp.javafxengine;
 
 import com.tinocs.javafxengine.Actor;
-import com.tinocs.javafxengine.World;
-import com.tinocs.mp.client.Client;
-
-import javafx.scene.image.Image;
 
 /**
  * An MPActor is an actor that is represented across multiple clients. MPActors have an actorId that allows

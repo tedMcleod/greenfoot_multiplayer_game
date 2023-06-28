@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="mpengine_client/exports/mpengine_client_v1.jar"/>
+    <jar path="mpengine_client/exports/mpengine_client_v2.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/mpengine_client/build_mpengine_client.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>

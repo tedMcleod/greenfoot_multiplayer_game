@@ -4,17 +4,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
-
-import com.tinocs.mp.client.ClientEventHandler;
-
-import javafx.scene.image.Image;
 
 import com.tinocs.javafxengine.Actor;
 import com.tinocs.mp.client.Client;
+import com.tinocs.mp.client.ClientEventHandler;
 
 /**
  * This is an implementation of the ClientEventHandler for games using the com.tinocs.javafxengine library
@@ -101,7 +96,6 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     public static final String CMD_DESTROY = "DESTROY";
     
     private MPWorld world;
-    private Map<String, Image> imgCache = new HashMap<>();
     
     /**
      * Create a GreenfootClient that will connect to the given hostName and portNumber.
