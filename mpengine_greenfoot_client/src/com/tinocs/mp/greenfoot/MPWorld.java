@@ -15,9 +15,9 @@ public abstract class MPWorld extends World {
     
     public void setClient(Client client) {
         this.client = client;
-        GreenfootEventHandler eh = (GreenfootEventHandler)client.getEventHandler();
-        if (eh != null) {
-            eh.setWorld(this);
+        if (client.getEventHandler() instanceof GreenfootEventHandler) {
+        	GreenfootEventHandler eh = (GreenfootEventHandler)client.getEventHandler();
+        	eh.setWorld(this);
         }
     }
 

@@ -16,16 +16,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * to and from the server. The server will pass on those messages to other clients as directed. This class
  * also replicates data stored on the server about other clients and rooms. To handle messages received,
  * call the {@link #setEventHandler(ClientEventHandler)} method and pass an instance of a class you wrote
- * that implements the {@link com.tinocs.mp.client.ClientEventHandler} interface.
+ * that implements the {@link ClientEventHandler} interface.
  * 
  * <p>Any commands sent from one client to one or more other clients will start with the id of the sender.</p>
  * 
  * <p>Messages being sent directly from the server rather than from another client are all handled by calling the
- *    appropriate method from the {@link com.tinocs.mp.client.ClientEventHandler} interface. For example, if you want
+ *    appropriate method from the {@link ClientEventHandler} interface. For example, if you want
  *    to do some action as soon as your client is assigned an id by the server, you can override the method
- *    {@link com.tinocs.mp.client.ClientEventHandler#onIdAssigned(String, Client)}. Or, if you wanted to do something
- *    when another client joins, override the method handleOtherClientJoined(String clientId, Client client). See
- *    {@link com.tinocs.mp.client.ClientEventHandler} for more information and for a complete list of events.<p>
+ *    {@link ClientEventHandler#onIdAssigned(String, Client)}. Or, if you wanted to do something
+ *    when another client joins, override the method {@link ClientEventHandler#handleOtherClientJoined(String, Client)}. See
+ *    {@link ClientEventHandler} for more information and for a complete list of events.<p>
  * 
  * Example Usage:
 <pre>
@@ -518,6 +518,41 @@ public class Client implements Runnable {
         }
         reader.close();
         return new RoomInfo(id, name, capacity, members, ownerId, isClosed);
+    }
+    
+    /**
+     * <p>Returns a String made up of the toString() representation of each parameter with a single space between each parameter.
+     * This is a convenience method for generating commands with space separated parameters.
+     * Make sure the objects passed in are either strings or are objects for which the toString() method returns the desired
+     * String. Note that if you pass primitive types, they will be autoboxed into the corresponding wrapper class such as Integer
+     * or Double, so passing in primitives will work fine.</p>
+     * 
+     * Example usage:
+<pre>
+import com.tinocs.mp.client.Client;
+
+public class CmdExample {
+
+	public static void main(String[] args) {
+		String actorId = "ab4b-c478-26df-86a6";
+		int x = 234;
+		int y = 12;
+		String cmd = Client.getCmdStr("MOVE", actorId, x, y);
+		System.out.println(cmd); // MOVE ab4b-c478-26df-86a6 234 12
+	}
+}
+</pre>
+     * 
+     * @param parameters the command parameters
+     * @return a String made up of the toString() representation of each parameter with a single space between each parameter. 
+     */
+    public static String getCmdStr(Object... parameters) {
+    	String cmd = "";
+    	for (int i = 0; i < parameters.length - 1; i++) {
+    		cmd += parameters[i] + " ";
+    	}
+    	if (parameters.length > 0) cmd += parameters[parameters.length - 1];
+    	return cmd;
     }
     
     /**

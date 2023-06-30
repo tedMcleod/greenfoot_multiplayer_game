@@ -41,7 +41,6 @@ public interface ClientEventHandler {
      */
     default void onDisconnected(Client client) {}
     
-    
     /**
      * Called when another client joins the server.
      * @param clientId the id of the client that joined
@@ -91,9 +90,9 @@ public interface ClientEventHandler {
     /**
      * Called when an attempt by the client with this event handler to join a room fails. The reason given could be:
      * <ul>
-     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#ROOM_FULL}</li>
-     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#ROOM_CLOSED}</li>
-     * 	<li>{@link com.tinocs.mp.client.ClientEventHandler#NO_SUCH_ROOM}</li>
+     * 	<li>{@link #ROOM_FULL}</li>
+     * 	<li>{@link #ROOM_CLOSED}</li>
+     * 	<li>{@link #NO_SUCH_ROOM}</li>
      * </ul>
      * @param reason the reason given for failure
      * @param roomId the id of the room
@@ -116,7 +115,6 @@ public interface ClientEventHandler {
      * @param client the client that received this command
      */
     default void handleRoomOwnership(String roomId, String ownerId, Client client) {}
-    
     
     /**
      * Called when a room is closed (blocking clients from joining).

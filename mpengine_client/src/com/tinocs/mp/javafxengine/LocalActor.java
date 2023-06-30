@@ -14,15 +14,15 @@ import com.tinocs.mp.client.Client;
  * informing the other clients of any changes so the corresponding MPActor can be updated:</p>
  * 
  * <ul>
- * 	<li>{@link javafx.scene.image.ImageView#xProperty()}</li>
- * 	<li>{@link javafx.scene.image.ImageView#yProperty()}</li>
- * 	<li>{@link javafx.scene.image.ImageView#rotateProperty()}</li>
- * 	<li>{@link javafx.scene.image.ImageView#opacityProperty()}</li>
- * 	<li>{@link javafx.scene.image.ImageView#scaleXProperty()}</li>
- * 	<li>{@link javafx.scene.image.ImageView#scaleYProperty()}</li>
+ * 	<li>{@link #xProperty()}</li>
+ * 	<li>{@link #yProperty()}</li>
+ * 	<li>{@link #rotateProperty()}</li>
+ * 	<li>{@link #opacityProperty()}</li>
+ * 	<li>{@link #scaleXProperty()}</li>
+ * 	<li>{@link #scaleYProperty()}</li>
  * 
  * </ul>
- * Note that currently using the {@link javafx.scene.image.ImageView#setImage(javafx.scene.image.Image)} method
+ * Note that currently using the {@link #setImage(javafx.scene.image.Image)} method
  * will break the relationship between this LocalActor's image and the image of the MPActor
  * because there is no system for telling the corresponding MPActor to change its image to
  * an image that isn't in a file. This can easily be circumvented by defining a custom method in both the LocalActor
@@ -82,27 +82,45 @@ public abstract class LocalActor extends MPActor {
     
     /**
      * broadcasts a message to the other clients to add an instance of the other class representing this class to the world in the same position.
-     * If there are any other properties that need to be set, you should override this method to broadcast message to update those properties too.
+     * If the constructor takes more parameters, you should override the {@link #getConstructorParameters()} method to include those parameters.
      */
     @Override
     public void addedToWorld() {
-        broadcastMessage(JavafxEngineEventHandler.CMD_ADD + " " + otherClass.getName() + " " + getActorId() + " " + getX() + " " + getY());
+        broadcastMessage(JavafxEngineEventHandler.CMD_ADD + " " + otherClass.getName() + " " + getX() + " " + getY() + " " + getConstructorParameters());
+    }
+    
+    /**
+     * Override this method to add to the String representing the parameters that should be passed to the constructor
+     * of the corresponding MPActor on other clients (see {@link #getOtherClass()}). Each parameter should be separated by a space.
+     * The default String is in the form actorId + " " + clientId.
+     * Note: if this actor is not in an MPWorld or if the client is null, then clientId will be null, but that should be harmless
+     * since in that case, the message this string is part of will not be broadcast.
+     * @return a string with space separated parameters that should be passed to the constructor of the corresponding MPActor on
+	 * other clients
+     */
+    public String getConstructorParameters() {
+    	String clientId = null;
+    	MPWorld mpw = getWorldOfType(MPWorld.class);
+        if (mpw != null && mpw.getClient() != null) {
+        	clientId = mpw.getClient().getId();
+        }
+        return getActorId() + " " + clientId;
     }
     
     /**
      * <p>Sets the image to the image at the given url and broadcasts the change to the other clients.
-     * This method should be preferred over {@link javafx.scene.image.ImageView#setImage(javafx.scene.image.Image)}
+     * This method should be preferred over {@link #setImage(javafx.scene.image.Image)}
      * when possible for two reasons:</p>
      * <ol>
-     * 	<li>{@link javafx.scene.image.ImageView#setImage(javafx.scene.image.Image)} cannot automatically broadcast the change
+     * 	<li>{@link #setImage(javafx.scene.image.Image)} cannot automatically broadcast the change
      *     to the other clients because there is no text parameter to represent the image like there is for a url.</li>
      *  <li>This method will cache the image so all images from the same url can point to the same Image object in memory.</li>
      * </ol>
      * 
-     * <p>If you must use {@link javafx.scene.image.ImageView#setImage(javafx.scene.image.Image)} then
-     * you will need to define a custom method in both the LocalActor subclass and the corresponding MPActor subclass
-	 * that creates the image. You can then make the method defined in the LocalActor subclass broadcast to the other
-	 * clients to call the corresponding method on the MPActor with the same actorId.</p>
+     * <p>If you must use {@link #setImage(javafx.scene.image.Image)} then you will need to define
+     * a custom method in both the LocalActor subclass and the corresponding MPActor subclass
+	 * that creates the image. You can then make the method defined in the LocalActor subclass broadcast
+	 * to the other clients to call the corresponding method on the MPActor with the same actorId.</p>
      * @param url the url of the image
      */
     @Override

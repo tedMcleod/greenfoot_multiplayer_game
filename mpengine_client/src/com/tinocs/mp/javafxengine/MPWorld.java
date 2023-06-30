@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 /**
  * An MPWorld represents a world in a multiplayer game. MPWorlds keep a referent to
- * a {@link com.tinocs.mp.client.Client} that can communicate with the other clients.
+ * a {@link Client} that can communicate with the other clients.
  * @author Ted_McLeod
  *
  */
@@ -17,9 +17,8 @@ public abstract class MPWorld extends World {
     private Client client;
     
     /**
-     * Set the client to the given client. If the client already has a
-     * {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler} then
-     * the world of that event handler will be set to this world.
+     * Set the client to the given client. If the client has a {@link JavafxEngineEventHandler}
+     * then the world of that event handler will be set to this world.
      * @param client the client
      */
     public void setClient(Client client) {

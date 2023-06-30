@@ -8,32 +8,34 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.tinocs.javafxengine.Actor;
+import com.tinocs.javafxengine.World;
 import com.tinocs.mp.client.Client;
 import com.tinocs.mp.client.ClientEventHandler;
 
 /**
- * This is an implementation of the ClientEventHandler for games using the com.tinocs.javafxengine library
- * (see {@link com.tinocs.javafxengine.Actor} and {@link com.tinocs.javafxengine.World}.
+ * This is an implementation of the {@link ClientEventHandler} for games using the
+ * com.tinocs.javafxengine library (see {@link Actor} and {@link World}.
  * 
  * This system is built on the core principal that actors will fall into one of three
  * categories:
  * <ol>
- * 		<li>{@link com.tinocs.mp.javafxengine.LocalActor}: An Actor whose state is controlled by this client. 
+ * 		<li>{@link LocalActor}: An Actor whose state is controlled by this client. 
  * 			These actors will typically have an act method that performs actions every frame.
- * 			Each {@link com.tinocs.mp.javafxengine.LocalActor} will be associated with a corresponding subclass
- * 			of {@link com.tinocs.mp.javafxengine.MPActor} and an instance of that corresponding MPActor
+ * 			Each {@link LocalActor} will be associated with a corresponding subclass
+ * 			of {@link MPActor} and an instance of that corresponding MPActor
  *			will mirror everything the LocalActor does on each other client. Each MPActor has an actorId and a
  *			clientId indicating which actor it represents across all clients and which client controls it, allowing
  *			messages to indicate which MPActor to call methods on. These actors can still be told to do something
  * 			by another client via messages, but the controlling client will be the one that actually
  * 			executes code to respond to the message.</li>
- * 		<li>{@link com.tinocs.mp.javafxengine.MPActor}: Actors controlled by another client are repesented
+ * 		<li>{@link MPActor}: Actors controlled by another client are repesented
  * 			by subclasses of MPActor that are not subclasses of LocalActor. These will be the actors that
  *			mirror the state of a LocalActor controlled by another client. To change the state of one of these
  * 			actors in a way that should be visible to other clients, a message should be sent to the controlling
  *			client to change the LocalActor associated with it, which will result in a broadcast telling
  *			all clients to do the same action to the corresponding MPActor in their program.</li>
- * 		<li>{@link com.tinocs.javafxengine.Actor}: Normal actors whose state is only relevant to the local client.
+ * 		<li>{@link Actor}: Normal actors whose state is only relevant to the local client, such as HUD elements
+ *          or whose state doesn't change, such as permanent scenery.
  *  </li>
  * </ol>
  * 
@@ -45,7 +47,7 @@ import com.tinocs.mp.client.ClientEventHandler;
 public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     // Commands to change actor properties
 	/**<p>Command to add an actor to the world.</p>
-	 * The command will be in the form: senderId ADD className actorId x y param1 param2 param3...
+	 * The command will be in the form: senderId ADD className x y param1 param2 param3...
 	 */
     public static final String CMD_ADD = "ADD";
     
@@ -65,7 +67,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
 	 * <p>Note that if you want to set the image to a modified image rather
 	 *    than an image located in a file, you should just make a custom
 	 *    method that does that and send a
-	 *    {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#CMD_METHOD} command.</p>
+	 *    {@link #CMD_METHOD} command.</p>
 	 */
     public static final String CMD_IMAGE = "IMG";
     
@@ -133,14 +135,14 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * If you override this method, be sure to call super.handleCommand(command, client) so these commands
      * will still be handled. If you want to modify what these commands do, you can simply override the corresponding methods.
      * <ul>
-     * 	<li>CMD_ADD: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleAddCmd(String, String, String, double, double)}</li>
-     * 	<li>CMD_MOVE: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleMethodCmd(String, String, List)}</li>
-     * 	<li>CMD_ROTATE: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleSetRotationCmd(String, double)}</li>
-     * 	<li>CMD_IMAGE: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleSetImageCmd(String, String)}</li>
-     * 	<li>CMD_OPACITY: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleSetOpacityCmd(String, double)}</li>
-     * 	<li>CMD_SCALE: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleScaleCmd(String, double, double)}</li>
-     * 	<li>CMD_METHOD: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleMethodCmd(String, String, List)}</li>
-     * 	<li>CMD_DESTROY: calls {@link com.tinocs.mp.javafxengine.JavafxEngineEventHandler#handleDestroyCmd(String)}</li>
+     * 	<li>{@link #CMD_ADD}: calls {@link #handleAddCmd(String, String, String, double, double)}</li>
+     * 	<li>{@link #CMD_MOVE}: calls {@link #handleMethodCmd(String, String, List)}</li>
+     * 	<li>{@link #CMD_ROTATE}: calls {@link #handleSetRotationCmd(String, double)}</li>
+     * 	<li>{@link #CMD_IMAGE}: calls {@link #handleSetImageCmd(String, String)}</li>
+     * 	<li>{@link #CMD_OPACITY}: calls {@link #handleSetOpacityCmd(String, double)}</li>
+     * 	<li>{@link #CMD_SCALE}: calls {@link #handleScaleCmd(String, double, double)}</li>
+     * 	<li>{@link #CMD_METHOD}: calls {@link #handleMethodCmd(String, String, List)}</li>
+     * 	<li>{@link #CMD_DESTROY}: calls {@link #handleDestroyCmd(String)}</li>
      * </ul>
      */
     @Override
@@ -153,14 +155,13 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
         String cmd = scan.next();
         
         if (cmd.equals(CMD_ADD)) {
-            // The command will be in the form: senderId ADD className actorId x y param1 param2 param3...
+            // The command will be in the form: senderId ADD className x y param1 param2 param3...
             String className = scan.next();
-            String actorId = scan.next();
             double x = scan.nextDouble();
             double y = scan.nextDouble();
             ArrayList<String> params = new ArrayList<>();
             while (scan.hasNext()) params.add(scan.next());
-            handleAddCmd(className, actorId, senderId, x, y, params);
+            handleAddCmd(className, x, y, params);
         } else if (cmd.equals(CMD_MOVE)) {
             // The command will be in the form: senderId MOVE actorId x y
             String actorId = scan.next();
@@ -211,26 +212,25 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     /**
      * Create an instance of the class with the given className and add it to the world at (x, y).
      * Assign it the given actorId and clientId and initializing it with the given parameters.
-     * @param className the name of the class to make an instance of (it should be a subclass of Actor since it needs to be added to the world)
-     * @param actorId the id of the actor (links this actor to actors on other clients that represent the same actor)
-     * @param clientId the id of the client that commanded this actor be created
+     * This method will throw a {@link ClassCastException} if the class is not a subclass of {@link Actor}.
+     * @param className the name of the class to make an instance of
      * @param x the x position to add the actor
      * @param y the y position to add the actor
      * @param parameters the remaining parameters to pass to the constructor (must be Strings)
      */
-    protected void handleAddCmd(String className, String actorId, String clientId, double x, double y, List<String> parameters) {
+    protected void handleAddCmd(String className, double x, double y, List<String> parameters) {
     	try {
-                Class<?> cls = Class.forName(className);
-                Class<?>[] paramTypes = new Class<?>[parameters.size() + 2];
-                for (int i = 0; i < paramTypes.length; i++) paramTypes[i] = String.class;
-                Constructor<?> constr = cls.getDeclaredConstructor(paramTypes);
-                Actor actor = (Actor)constr.newInstance(actorId, clientId);
-            	getWorld().add(actor);
-                actor.setX(x);
-                actor.setY(y);
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException err) {
-                err.printStackTrace();
-            }
+            Class<?> cls = Class.forName(className);
+            Class<?>[] paramTypes = new Class<?>[parameters.size()];
+            for (int i = 0; i < paramTypes.length; i++) paramTypes[i] = String.class;
+            Constructor<?> constr = cls.getDeclaredConstructor(paramTypes);
+            Actor actor = (Actor)constr.newInstance(parameters.toArray());
+        	getWorld().add(actor);
+            actor.setX(x);
+            actor.setY(y);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException err) {
+            err.printStackTrace();
+        }
     }
     
     /**
@@ -259,7 +259,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     
     /**
      * Sets the image of the actor with the given actorId to the image at the given url.
-     * See {@link com.tinocs.javafxengine.Actor#setImage(String)}
+     * See {@link Actor#setImage(String)}
      * @param actorId the id of the actor
      * @param url the path to the image resource. For example, if the image is in the
      *        images package and is named "pic.png", the url would be "images/pic.png"
@@ -271,7 +271,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     
     /**
      * Sets the opacity of the actor with the given actorId to the given opacity on a scale of 0 to 1.
-     * See {@link javafx.scene.Node#setOpacity(double)}
+     * See {@link Actor#setOpacity(double)}
      * @param actorId the id of the actor
      * @param opacity the opacity
      */
@@ -282,7 +282,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     
     /**
      * Sets the scaleX of the actor with the given actorId
-     * See {@link javafx.scene.Node#setScaleX(double)}
+     * See {@link Actor#setScaleX(double)}
      * @param actorId the id of the actor
      * @param scaleX the horizontal scale factor 
      */
@@ -295,7 +295,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     
     /**
      * Sets the scaleY of the actor with the given actorId
-     * See {@link javafx.scene.Node#setScaleY(double)}
+     * See {@link Actor#setScaleY(double)}
      * @param actorId the id of the actor
      * @param scaleY the vertical scale factor
      */
@@ -332,6 +332,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * Calls destroy on the actor with the given actorId.
      * @param actorId the id of the actor
      */
+ // TODO: fix this the way it is done in GreenfootEventHandler (just remove the actor). Refactor the command to remove.
     protected void handleDestroyCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.destroy();
