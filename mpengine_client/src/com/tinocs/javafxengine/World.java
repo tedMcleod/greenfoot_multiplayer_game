@@ -1,8 +1,8 @@
 package com.tinocs.javafxengine;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -175,7 +175,7 @@ public abstract class World extends Pane {
 	 * @return a list of all the actors in the world of the given class.
 	 */
 	public <A extends Actor> List<A> getObjects(Class<A> cls) {
-		List<A> list = new ArrayList<A>();
+		List<A> list = new LinkedList<A>();
 		for (Node n : getChildren()) {
 			if (cls.isInstance(n)) {
 				list.add(cls.cast(n));
@@ -194,7 +194,7 @@ public abstract class World extends Pane {
 	 * @return a list of Actors of the given class that contain the given point
 	 */
 	public <A extends Actor> List<A> getObjectsAt(double x, double y, Class<A> cls) {
-		ArrayList<A> list = new ArrayList<>();
+		List<A> list = new LinkedList<>();
 		for (A a : getObjects(cls)) {
 			if (a.getBoundsInParent().contains(x, y)) {
 				list.add(a);
