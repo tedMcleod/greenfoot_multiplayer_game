@@ -1,6 +1,6 @@
 package com.tinocs.javafxengine;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javafx.beans.value.ChangeListener;
@@ -12,7 +12,7 @@ import javafx.scene.image.ImageView;
 
 /**
  * <p>Actor is an abstract base class for sprites in an arcade style game.  Because Actor
- * extends ImageView, you have access to all the ImageView commands such as:</p>
+ * extends ImageView, it inherits all the ImageView methods such as:</p>
  * <ul>
  *     <li> getX(), getY(), setX(), setY()</li>
  *     <li> setImage()</li>
@@ -23,30 +23,52 @@ import javafx.scene.image.ImageView;
  */
 public abstract class Actor extends ImageView {
 	
+	// a listener that responds when this Actor is added or to or removed from a World.
 	private ChangeListener<Parent> addedToWorldListener = new ChangeListener<Parent>() {
 		@Override
 		public void changed(ObservableValue<? extends Parent> observable, Parent oldValue, Parent newValue) {
 			if (newValue instanceof World) addedToWorld();
+			else if (oldValue instanceof World && newValue != oldValue) {
+				removedFromWorld((World)oldValue);
+			}
 		}
 	};
 	
 	/**
-	 * Create an instance of an Actor.
+	 * Initialize an instance of an Actor.
 	 */
 	public Actor() {
 		super();
 		parentProperty().addListener(addedToWorldListener);
 	}
 
-	
+	/**
+	 * Initialize an instance of an Actor with the given {@link Image}
+	 * @param image the image of the actor
+	 */
 	public Actor(Image image) {
 		super(image);
 		parentProperty().addListener(addedToWorldListener);
 	}
 
+	/**
+	 * Initialize an Actor object with image loaded from the specified URL. 
+	 * new Actor(url) has the same effect as new Actor(new Image(url)).
+	 * @param url the string representing the URL from which to load the image
+	 * @throws NullPointerException if URL is null
+	 * @throws IllegalArgumentException if URL is invalid or unsupported
+	 */
 	public Actor(String url) {
 		super(url);
 		parentProperty().addListener(addedToWorldListener);
+	}
+	
+	public double getCenterX() {
+		return getX() + getWidth() / 2;
+	}
+	
+	public double getCenterY() {
+		return getY() + getHeight() / 2;
 	}
 
 	/**
@@ -57,6 +79,24 @@ public abstract class Actor extends ImageView {
 	public void move(double dx, double dy) {
 		setX(getX() + dx);
 		setY(getY() + dy);
+	}
+	
+	/**
+	 * Moves this actor by the given amount in the direction the actor is
+	 * currently rotated.
+	 * @param amount the amount to move
+	 */
+	public void move(double amount) {
+		double radAngle = Math.toRadians(getRotate());
+		double dx = Math.cos(radAngle) * amount;
+		double dy = Math.sin(radAngle) * amount;
+		move(dx, dy);
+	}
+	
+	public void turnTowards(double x, double y) {
+		double dx = x - getCenterX();
+		double dy = y - getCenterY();
+		
 	}
 	
 	/**
@@ -99,6 +139,41 @@ public abstract class Actor extends ImageView {
 	}
 	
 	/**
+	 * Returns a list of actors of the given type that contain the point offset dx horizontally
+	 * and dy vertically from the center of this actor.
+	 * @param <A> The type of actors in the list
+	 * @param dx the horizontal offset from the center of this actor
+	 * @param dy the vertical offset from the center of this actor
+	 * @param cls The type of actors at offset that should be included
+	 * @return a list of actors of the given type that contain the point (getCenterX() + dx, getCenterY() + dy)
+	 */
+	public <A extends Actor> List<A> getObjectsAtOffset(double dx, double dy, Class<A> cls) {
+		return getWorld().getObjectsAt(getCenterX() + dx, getCenterY() + dy, cls);
+	}
+	
+	/**
+	 * Returns an actor of type A that contains the point offset dx horizontally
+	 * and dy vertically from the center of this actor.
+	 * @param <A> The type of actor that could contain the point
+	 * @param dx the horizontal offset from the center of this actor
+	 * @param dy the vertical offset from the center of this actor
+	 * @param cls The type of actor at offset that should considered
+	 * @return an actor of the given type that contain the point (getCenterX() + dx, getCenterY() + dy)
+	 * or null if no such actor exists.
+	 */
+	public <A extends Actor> A getOneObjectAtOffset(double dx, double dy, Class<A> cls) {
+		double x = getCenterX() + dx;
+		double y = getCenterY() + dy;
+		for (Node n : getWorld().getChildren()) {
+			if (cls.isInstance(n)) {
+				A a = cls.cast(n);
+				if (a.getBoundsInParent().contains(x, y)) return a;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Returns a list of the actors of a given type intersecting this actor.
 	 * Note that an actor never includes itself in the list of intersecting actors.
 	 * @param <A> the class of intersecting actors that will be in the returned list
@@ -106,7 +181,7 @@ public abstract class Actor extends ImageView {
 	 * @return a list of all actors of the given type intersecting this actor
 	 */
 	public <A extends Actor> List<A> getIntersectingObjects(Class<A> cls) {
-		ArrayList<A> list = new ArrayList<>();
+		LinkedList<A> list = new LinkedList<>();
 		for (A a : getWorld().getObjects(cls)) {
 			if (a != this && a.getBoundsInParent().intersects(getBoundsInParent())) list.add(a);
 		}
@@ -120,8 +195,11 @@ public abstract class Actor extends ImageView {
 	 * @return an intersecting actor of the given class, or null if no such actor
 	 */
 	public <A extends Actor> A getOneIntersectingObject(Class<A> cls) {
-		for (A a : getWorld().getObjects(cls)) {
-			if (a != this && a.getBoundsInParent().intersects(getBoundsInParent())) return a;
+		for (Node n : getWorld().getChildren()) {
+			if (cls.isInstance(n)) {
+				A a = cls.cast(n);
+				if (a != this && a.getBoundsInParent().intersects(getBoundsInParent())) return a;
+			}
 		}
 		return null;
 	}
@@ -133,17 +211,22 @@ public abstract class Actor extends ImageView {
 	public abstract void act(long now);
 	
 	/**
-	 * This method is called when an actor is added to the world and should
-	 * be overridden in subclasses as desired.
+	 * This method is called when this actor is added to a World.
+	 * Subclasses can override this method to do something when added to a world.
 	 */
-	public void addedToWorld() {
-		// meant to be overridden.
-	}
+	public void addedToWorld() {}
+	
+	/**
+	 * This method is called when this actor is removed from a World.
+	 * Subclasses can override this method to do something when removed from a world.
+	 * @param world the world this actor was removed from
+	 */
+	public void removedFromWorld(World world) {}
 	
 	/**
 	 * Set the image of this actor to the image at the given url.
 	 * The image will be loaded by {@link com.tinocs.javafxengine.ImageCache#getImage(String)}
-	 * which cache the image. If you don't want the image cached, use the method
+	 * which caches the image. If you don't want the image cached, use the method
 	 * {@link com.tinocs.javafxengine.Actor#setImageNoCache(String)}
 	 * @param url the url of the image file. For example, if the image is in the
      *        images package and is named "pic.png", the url would be "images/pic.png"
