@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import com.tinocs.mp.client.Client;
 import com.tinocs.mp.client.ClientEventHandler;
@@ -276,7 +277,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * Returns a string defining a {@link #CMD_ADD} command.
      * Note that the senderId will not be included in the command because that token
      * is automatically added to the beginning of every command when it is broadcast.
-     * If the class is not a subclass of actor, the other clients will throw a {@link ClassCastException}
+     * If the class is not a subclass of {@link Actor}, the other clients will throw a {@link ClassCastException}
      * when trying to handle the command.
      * @param cls The class to make an instance of
      * @param x the x-coordinate of the position to add the actor
@@ -348,8 +349,11 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor to set the image of
      * @param fileName the name of the file containing the image data
      * @return a string defining a {@link #CMD_IMAGE} command
+     * @throws IllegalArgumentException if fileName contains any whitespace since that would cause other clients
+     * to fail to parse the image name correctly.
      */
     public static String getImageCmd(String actorId, String fileName) {
+    	if (Pattern.compile("\\s").matcher(fileName).find()) throw new IllegalArgumentException("fileName contains whitespace: " + fileName);
     	return Client.getCmdStr(CMD_IMAGE, actorId, fileName);
     }
     

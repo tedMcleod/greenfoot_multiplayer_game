@@ -1,6 +1,7 @@
 package com.tinocs.mp.javafxengine;
 import java.util.UUID;
 
+import com.tinocs.javafxengine.World;
 import com.tinocs.mp.client.Client;
 
 /**
@@ -86,25 +87,25 @@ public abstract class LocalActor extends MPActor {
      */
     @Override
     public void addedToWorld() {
-        broadcastMessage(JavafxEngineEventHandler.CMD_ADD + " " + otherClass.getName() + " " + getX() + " " + getY() + " " + getConstructorParameters());
+    	broadcastMessage(JavafxEngineEventHandler.getAddCmd(otherClass, getX(), getY(), getConstructorParameters()));
     }
     
     /**
      * Override this method to add to the String representing the parameters that should be passed to the constructor
-     * of the corresponding MPActor on other clients (see {@link #getOtherClass()}). Each parameter should be separated by a space.
-     * The default String is in the form actorId + " " + clientId.
-     * Note: if this actor is not in an MPWorld or if the client is null, then clientId will be null, but that should be harmless
-     * since in that case, the message this string is part of will not be broadcast.
-     * @return a string with space separated parameters that should be passed to the constructor of the corresponding MPActor on
-	 * other clients
+     * of the corresponding MPActor on other clients (see {@link #getOtherClass()}). By default this method returns
+	 * {actorId, clientId}, where actorId is the id of this actor and the clientId is the id of the client of the MPWorld
+	 * this actor is in. If this actor is not in an MPWorld or if the client is null, then clientId will be null, but that
+	 * should be harmless since in that case, the message this string is part of will not be broadcast.
+	 * 
+     * @return an array of parameters that should be passed to the constructor of the corresponding MPActor on other clients
      */
-    public String getConstructorParameters() {
+    public Object[] getConstructorParameters() {
     	String clientId = null;
     	MPWorld mpw = getWorldOfType(MPWorld.class);
         if (mpw != null && mpw.getClient() != null) {
         	clientId = mpw.getClient().getId();
         }
-        return getActorId() + " " + clientId;
+        return new Object[]{getActorId(), clientId};
     }
     
     /**

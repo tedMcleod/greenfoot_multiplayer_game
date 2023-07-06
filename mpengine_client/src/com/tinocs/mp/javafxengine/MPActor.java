@@ -1,6 +1,7 @@
 package com.tinocs.mp.javafxengine;
 
 import com.tinocs.javafxengine.Actor;
+import com.tinocs.javafxengine.World;
 
 /**
  * An MPActor is an actor that is represented across multiple clients. MPActors have an actorId that allows
@@ -48,30 +49,17 @@ public abstract class MPActor extends Actor {
         return clientId;
     }
     
-    /**
-     * do what needs to be done when this MPActor is destroyed
-	 * (default implementation is to remove this actor from the world).
-     */
-    public void onDestroy() {
-        getWorld().remove(this);
-    }
-    
-    /**
-     * If this actor is in an MPWorld, call onDestroy() on this actor
-     * and if the client is connected, broadcast to the other clients
-     * that this actor is destroyed.
-     */
-    public void destroy() {
-        MPWorld gw = getWorldOfType(MPWorld.class);
-        if (gw != null) {
-            onDestroy();
-            if (gw.getClient() != null && gw.getClient().isConnected()) {
-                String msg = JavafxEngineEventHandler.CMD_DESTROY + " " + getActorId();
-                String roomId = gw.getClient().getCurrentRoomId();
+    @Override
+    public void removedFromWorld(World world) {
+        if (world instanceof MPWorld) {
+        	MPWorld mpw = (MPWorld)world;
+            if (mpw.getClient() != null && mpw.getClient().isConnected()) {
+                String msg = JavafxEngineEventHandler.getRemoveCmd(getActorId());
+                String roomId = mpw.getClient().getCurrentRoomId();
                 if (roomId == null) {
-                    gw.getClient().broadcastMessage(msg);
+                    mpw.getClient().broadcastMessage(msg);
                 } else {
-                    gw.getClient().broadcastMessageToRoom(msg, roomId);
+                    mpw.getClient().broadcastMessageToRoom(msg, roomId);
                 }
             }
         }

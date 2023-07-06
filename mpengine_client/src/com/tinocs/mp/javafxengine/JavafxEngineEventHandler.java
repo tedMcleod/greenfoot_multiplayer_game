@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import com.tinocs.javafxengine.Actor;
 import com.tinocs.javafxengine.World;
@@ -95,7 +96,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     /**<p>Command to remove an actor.</p>
 	 * The command will be in the form: senderId DESTROY actorId
 	 */
-    public static final String CMD_DESTROY = "DESTROY";
+    public static final String CMD_REMOVE = "REMOVE";
     
     private MPWorld world;
     
@@ -137,12 +138,12 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * <ul>
      * 	<li>{@link #CMD_ADD}: calls {@link #handleAddCmd(String, String, String, double, double)}</li>
      * 	<li>{@link #CMD_MOVE}: calls {@link #handleMethodCmd(String, String, List)}</li>
-     * 	<li>{@link #CMD_ROTATE}: calls {@link #handleSetRotationCmd(String, double)}</li>
+     * 	<li>{@link #CMD_ROTATE}: calls {@link #handleRotateCmd(String, double)}</li>
      * 	<li>{@link #CMD_IMAGE}: calls {@link #handleSetImageCmd(String, String)}</li>
      * 	<li>{@link #CMD_OPACITY}: calls {@link #handleSetOpacityCmd(String, double)}</li>
      * 	<li>{@link #CMD_SCALE}: calls {@link #handleScaleCmd(String, double, double)}</li>
      * 	<li>{@link #CMD_METHOD}: calls {@link #handleMethodCmd(String, String, List)}</li>
-     * 	<li>{@link #CMD_DESTROY}: calls {@link #handleDestroyCmd(String)}</li>
+     * 	<li>{@link #CMD_REMOVE}: calls {@link #handleRemoveCmd(String)}</li>
      * </ul>
      */
     @Override
@@ -167,12 +168,12 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
             String actorId = scan.next();
             double x = scan.nextDouble();
             double y = scan.nextDouble();
-            handleSetLocationCmd(actorId, x, y);
+            handleMoveCmd(actorId, x, y);
         } else if (cmd.equals(CMD_ROTATE)) {
             // The command will be in the form: senderId ROT actorId angle
             String actorId = scan.next();
             double angle = scan.nextDouble();
-            handleSetRotationCmd(actorId, angle);
+            handleRotateCmd(actorId, angle);
         } else if (cmd.equals(CMD_IMAGE)) {
             // The command will be in the form: senderId IMG actorId url
             String actorId = scan.next();
@@ -201,10 +202,10 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
             ArrayList<String> params = new ArrayList<>();
             while (scan.hasNext()) params.add(scan.next());
             handleMethodCmd(actorId, methodName, params);
-        } else if (cmd.equals(CMD_DESTROY)) {
+        } else if (cmd.equals(CMD_REMOVE)) {
             // The command will be in the form: senderId DESTROY actorId
             String actorId = scan.next();
-            handleDestroyCmd(actorId);
+            handleRemoveCmd(actorId);
         }
         scan.close();
     }
@@ -218,19 +219,37 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param y the y position to add the actor
      * @param parameters the remaining parameters to pass to the constructor (must be Strings)
      */
-    protected void handleAddCmd(String className, double x, double y, List<String> parameters) {
+    private void handleAddCmd(String className, double x, double y, List<String> parameters) {
     	try {
-            Class<?> cls = Class.forName(className);
+            Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
             Class<?>[] paramTypes = new Class<?>[parameters.size()];
             for (int i = 0; i < paramTypes.length; i++) paramTypes[i] = String.class;
             Constructor<?> constr = cls.getDeclaredConstructor(paramTypes);
             Actor actor = (Actor)constr.newInstance(parameters.toArray());
-        	getWorld().add(actor);
             actor.setX(x);
             actor.setY(y);
+        	getWorld().add(actor);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException err) {
             err.printStackTrace();
         }
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_ADD} command.
+     * Note that the senderId will not be included in the command because that token
+     * is automatically added to the beginning of every command when it is broadcast.
+     * If the class is not a subclass of {@link Actor}, the other clients will throw a {@link ClassCastException}
+     * when trying to handle the command.
+     * @param cls The class to make an instance of
+     * @param x the x-coordinate of the position to add the actor
+     * @param y the y-coordinate of the position to add the actor
+     * @param parameters the parameters to pass to the constructor
+     * @return a String defining a CMD_ADD command
+     */
+    public static String getAddCmd(Class<?> cls, double x, double y, Object... parameters) {
+    	String cmd = Client.getCmdStr(CMD_ADD, cls.getName(), x, y);
+    	if (parameters.length > 0) cmd += " " + Client.getCmdStr(parameters);
+    	return cmd;
     }
     
     /**
@@ -239,7 +258,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param x the x coordinate
      * @param y the y coordinate
      */
-    protected void handleSetLocationCmd(String actorId, double x, double y) {
+    private void handleMoveCmd(String actorId, double x, double y) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setX(x);
@@ -248,25 +267,61 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     }
     
     /**
+     * Returns a string defining a {@link #CMD_MOVE} command.
+     * @param actorId the id of the actor to move
+     * @param x the x-coordinate of the actor's new location
+     * @param y the y-coordinate of the actor's new location
+     * @return a string defining a {@link #CMD_MOVE} command
+     */
+    public static String getMoveCmd(String actorId, int x, int y) {
+    	return Client.getCmdStr(CMD_MOVE, actorId, x, y);
+    }
+    
+    /**
      * Sets the rotation of the actor with the given actorId to the given angle
      * @param actorId the id of the actor
      * @param angle the angle to set the rotation to
      */
-    protected void handleSetRotationCmd(String actorId, double angle) {
+    private void handleRotateCmd(String actorId, double angle) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setRotate(angle);
     }
     
     /**
+     * Returns a string defining a {@link #CMD_ROTATE} command. 
+     * @param actorId the id of the actor to rotate
+     * @param angle the angle to set the rotation of the actor to
+     * @return a string defining a {@link #CMD_ROTATE} command
+     */
+    public static String getRotateCmd(String actorId, int angle) {
+    	return Client.getCmdStr(CMD_ROTATE, actorId, angle);
+    }
+    
+    /**
      * Sets the image of the actor with the given actorId to the image at the given url.
      * See {@link Actor#setImage(String)}
+     * 
      * @param actorId the id of the actor
-     * @param url the path to the image resource. For example, if the image is in the
-     *        images package and is named "pic.png", the url would be "images/pic.png"
+     * @param url the path to the image resource.
      */
-    protected void handleSetImageCmd(String actorId, String url) {
+    private void handleSetImageCmd(String actorId, String url) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setImage(url);
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_IMAGE} command.
+     * If the image is in the images package and is named "pic.png", the url would be "images/pic.png".
+     * For more information, see {@link Actor#setImage(String)}.
+     * @param actorId the id of the actor to set the image of
+     * @param url the path to the image resource.
+     * @return a string defining a {@link #CMD_IMAGE} command
+     * @throws IllegalArgumentException if the url contains any whitespace characters since that would cause other clients
+     * to fail to parse the image name correctly.
+     */
+    public static String getImageCmd(String actorId, String url) {
+    	if (Pattern.compile("\\s").matcher(url).find()) throw new IllegalArgumentException("url contains whitespace: " + url);
+    	return Client.getCmdStr(CMD_IMAGE, actorId, url);
     }
     
     /**
@@ -275,9 +330,22 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param opacity the opacity
      */
-    protected void handleSetOpacityCmd(String actorId, double opacity) {
+    private void handleSetOpacityCmd(String actorId, double opacity) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null)  mpa.setOpacity(opacity);
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_OPACITY} command.
+     * The opacity should be a number between 0 and 1 inclusive.
+     * Any number less than 0 will be treated as 0 and any number
+     * greater than 1 will be treated as 1.
+     * @param actorId the id of the actor to set the opacity of
+     * @param opacity the opacity to set the image to
+     * @return a string defining a {@link #CMD_OPACITY} command
+     */
+    public static String getOpacityCmd(String actorId, int opacity) {
+    	return Client.getCmdStr(CMD_OPACITY, actorId, opacity);
     }
     
     /**
@@ -286,11 +354,21 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param scaleX the horizontal scale factor 
      */
-    protected void handleScaleXCmd(String actorId, double scaleX) {
+    private void handleScaleXCmd(String actorId, double scaleX) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setScaleX(scaleX);
         }
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_SCALE_X} command.
+     * @param actorId the id of the actor to scale
+     * @param scaleX the horizontal scale factor
+     * @return a string defining a {@link #CMD_SCALE_X} command
+     */
+    public static String getScaleXCmd(String actorId, double scaleX) {
+    	return Client.getCmdStr(CMD_SCALE_X, actorId, scaleX);
     }
     
     /**
@@ -299,11 +377,21 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param scaleY the vertical scale factor
      */
-    protected void handleScaleYCmd(String actorId, double scaleY) {
+    private void handleScaleYCmd(String actorId, double scaleY) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setScaleY(scaleY);
         }
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_SCALE_Y} command.
+     * @param actorId the id of the actor to scale
+     * @param scaleX the vertical scale factor
+     * @return a string defining a {@link #CMD_SCALE_Y} command
+     */
+    public static String getScaleYCmd(String actorId, double scaleY) {
+    	return Client.getCmdStr(CMD_SCALE_Y, actorId, scaleY);
     }
     
     /**
@@ -314,7 +402,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param methodName the name of the method to be called
      * @param parameters the parameters to pass to the method
      */
-    protected void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
+    private void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
             Class<?>[] paramTypes = new Class<?>[parameters.size()];
@@ -329,13 +417,35 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     }
     
     /**
-     * Calls destroy on the actor with the given actorId.
-     * @param actorId the id of the actor
+     * Returns a string defining a {@link #CMD_METHOD} command.
+     * @param actorId the id of the actor to call the method on
+     * @param methodName the name of the method to call
+     * @param parameters the parameters to pass to the method
+     * @return a string defining a {@link #CMD_METHOD} command
      */
- // TODO: fix this the way it is done in GreenfootEventHandler (just remove the actor). Refactor the command to remove.
-    protected void handleDestroyCmd(String actorId) {
+    public static String getMethodCmd(String actorId, String methodName, Object... parameters) {
+    	String cmd = Client.getCmdStr(CMD_METHOD, methodName);
+    	if (parameters.length > 0) cmd += " " + Client.getCmdStr(parameters);
+    	return cmd;
+    }
+    
+    /**
+     * Handle the {@link #CMD_REMOVE} command which removes the actor with
+	 * the given actorId from the world.
+     * @param actorId the id of the actor to remove from the world
+     */
+    private void handleRemoveCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
-        if (mpa != null) mpa.destroy();
+        if (mpa != null) getWorld().remove(mpa);
+    }
+    
+    /**
+     * Returns a string defining a {@link #CMD_REMOVE} command.
+     * @param actorId the id of the actor to remove from the world
+     * @return a string defining a {@link #CMD_REMOVE} command
+     */
+    public static String getRemoveCmd(String actorId) {
+    	return Client.getCmdStr(CMD_REMOVE, actorId);
     }
     
     /**
