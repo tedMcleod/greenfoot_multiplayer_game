@@ -1,5 +1,6 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 import com.tinocs.mp.greenfoot.*;
+import com.tinocs.mp.client.Client;
 
 /**
  * Write a description of class Player here.
@@ -24,9 +25,9 @@ public class Player extends LocalActor {
     private int flagTime = 0;
     private final int TIME_TO_WIN = 2000;
 
-    public Player(String clientId) {
-        super(clientId);
-        setOtherClass(OtherPlayer.class);
+    public Player(Client client) {
+        super(client, OtherPlayer.class);
+        setImage("ladybug_02.png");
         scaleToFitSize(SIZE);
     }
 
@@ -84,7 +85,7 @@ public class Player extends LocalActor {
     }
 
     public void fireShot() {
-        Shot shot = new Shot(getClientId());
+        Shot shot = new Shot(getWorldOfType(MPWorld.class).getClient());
         getWorld().addObject(shot, getX(), getY());
         shot.setRotation(getRotation());
     }

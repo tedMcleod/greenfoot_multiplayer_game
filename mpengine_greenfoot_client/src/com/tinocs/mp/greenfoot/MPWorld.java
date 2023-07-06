@@ -1,6 +1,7 @@
 package com.tinocs.mp.greenfoot;
 
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+
 import com.tinocs.mp.client.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -42,6 +43,35 @@ public abstract class MPWorld extends World {
             }
         }
         return clientActors;
+    }
+    
+    /**
+     * If an {@link MPActor} is removed, then broadcast a command to remove the actor from other clients.
+     * If this client is in a room, the message will be broadcast to the room, otherwise it will
+     * be broadcast to all other clients. Before an MPActor is removed, this method will call
+     * {@link MPActor#willBeRemoved()} and after an MPActor has been removed, this method will call
+     * {@link MPActor#hasBeenRemoved(MPWorld)}, passing this world as the parameter.
+     */
+    @Override
+    public void removeObject(Actor object) {
+    	if (object instanceof MPActor) {
+    		MPActor mpa = (MPActor)object;
+    		Client client = getClient();
+            if (client != null && client.isConnected()) {
+                String msg = GreenfootEventHandler.getRemoveCmd(mpa.getActorId());
+                String roomId = client.getCurrentRoomId();
+                if (roomId == null) {
+                	client.broadcastMessage(msg);
+                } else {
+                	client.broadcastMessageToRoom(msg, roomId);
+                }
+            }
+            mpa.willBeRemoved();
+            super.removeObject(object);
+            mpa.hasBeenRemoved(this);
+    	} else {
+    		super.removeObject(object);
+    	}
     }
 
     @Override

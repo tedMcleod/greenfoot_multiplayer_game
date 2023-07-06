@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // Define the class that implements ClientEventHandler
 public class GameHandler implements ClientEventHandler {
 
-	@Override
+	{@literal @}Override
 	public void handleCommand(String command, Client client) {
 		// Parse the command and take actions accordingly.
 		// Try first printing the command to see what commands look like.

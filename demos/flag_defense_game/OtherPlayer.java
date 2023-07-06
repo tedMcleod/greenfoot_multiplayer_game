@@ -11,6 +11,7 @@ public class OtherPlayer extends MPActor {
 
     public OtherPlayer(String id, String clientId) {
         super(id, clientId);
+        setImage("ladybug_02_other.png");
         scaleToFitSize(Player.SIZE);
     }
 

@@ -5,6 +5,7 @@ public class OtherShot extends MPActor {
     
     public OtherShot(String id, String clientId) {
         super(id, clientId);
+        setImage("beeper.png");
         scaleToFitSize(Shot.SIZE);
     }
     

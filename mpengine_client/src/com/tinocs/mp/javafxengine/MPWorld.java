@@ -2,6 +2,7 @@ package com.tinocs.mp.javafxengine;
 
 import java.util.List;
 
+import com.tinocs.javafxengine.Actor;
 import com.tinocs.javafxengine.World;
 import com.tinocs.mp.client.Client;
 

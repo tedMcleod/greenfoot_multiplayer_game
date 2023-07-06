@@ -1,13 +1,14 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 import com.tinocs.mp.greenfoot.*;
+import com.tinocs.mp.client.Client;
 
 public class Shot extends LocalActor {
     
     public static final int SIZE = 12;
     
-    public Shot(String clientId) {
-        super(clientId);
-        setOtherClass(OtherShot.class);
+    public Shot(Client client) {
+        super(client, OtherShot.class);
+        setImage("beeper.png");
         scaleToFitSize(SIZE);
     }
     
@@ -19,17 +20,17 @@ public class Shot extends LocalActor {
         int ww = getWorld().getWidth();
         int wh = getWorld().getHeight();
         if (op != null) {
-            destroy();
+            getWorld().removeObject(this);
             op.onHit();
         } else {
             int x = getX();
             int y = getY();
             if (x - w / 2 > ww || x + w / 2 < 0 || y - h / 2 > wh || y + h / 2 < 0) {
-                destroy();
+                getWorld().removeObject(this);
             } else {
                 Wall wall = (Wall) getOneIntersectingObject(Wall.class);
                 if (wall != null) {
-                   destroy();
+                   getWorld().removeObject(this);
                 }
             }
         }

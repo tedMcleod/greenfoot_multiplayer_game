@@ -74,6 +74,8 @@ public class TitleWorld extends World {
         int nfx = margin + nlx + nlw / 2 + nfw / 2;
         nameField.setText(lastName);
         addObject(nameField, nfx, getHeight() - nfh / 2 - margin);
+        
+        OtherPlayer op = new OtherPlayer("45435", "45345435");
     }
     
     public String getAddress() {

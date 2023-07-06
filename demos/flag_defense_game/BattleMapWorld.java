@@ -240,7 +240,7 @@ public class BattleMapWorld extends LevelWorld {
         int startX = startLoc.getX();
         int startY = startLoc.getY();
         if (getClient().debug()) System.out.println("Start Loc: (" + startX + ", " + startY + ")");
-        Player player = new Player(getClient().getId());
+        Player player = new Player(getClient());
         addObject(player, startX, startY);
         player.turnTowards(getWidth() / 2, getHeight() / 2);
     }

@@ -1,15 +1,19 @@
 package com.tinocs.mp.greenfoot;
 
-import com.tinocs.mp.client.*;
-
-import java.util.Scanner;
-import greenfoot.*;
+import java.io.PrintStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+
+import com.tinocs.mp.client.Client;
+import com.tinocs.mp.client.ClientEventHandler;
+
+import greenfoot.Actor;
+import greenfoot.Greenfoot;
+import greenfoot.GreenfootImage;
 
 /**
  * <p>This is an implementation of the {@link ClientEventHandler} for Greenfoot games.</p>
@@ -54,7 +58,7 @@ import java.util.List;
 public abstract class GreenfootEventHandler implements ClientEventHandler {
     // Commands to change actor properties
 	/**<p>Command to add an actor to the world.</p>
-	 * The command will be in the form: senderId ADD className actorId x y param1 param2 param3...
+	 * The command will be in the form: senderId ADD className x y param1 param2 param3...
 	 */
     public static final String CMD_ADD = "ADD";
     
@@ -180,7 +184,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
         String cmd = scan.next();
         
         if (cmd.equals(CMD_ADD)) {
-            // The command will be in the form: senderId ADD className actorId x y param1 param2 param3...
+            // The command will be in the form: senderId ADD className x y param1 param2 param3...
             String className = scan.next();
             int x = scan.nextInt();
             int y = scan.nextInt();
@@ -249,14 +253,22 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
     private void handleAddCmd(String className, int x, int y, List<String> parameters) {
         // Create an instance of the class given by the className and add it to the world at the given x, y
             try {
-            	Class<?> cls = Class.forName(className);
+            	// executing Class.forName(className) without specifying the loader doesn't find the class
+            	// because it tries to find it in a different class loader.
+            	Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
                 Class<?>[] paramTypes = new Class<?>[parameters.size()];
                 for (int i = 0; i < paramTypes.length; i++) paramTypes[i] = String.class;
                 Constructor<?> constr = cls.getDeclaredConstructor(paramTypes);
                 Actor actor = (Actor)constr.newInstance(parameters.toArray());
             	getWorld().addObject(actor, x, y);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException err) {
+            	// For some reason, System.err messages do not get printed in the greenfoot console, so
+            	// this prints the error to System.out to make sure it is visible.
+            	// Also, this makes it easier to see exactly when the error occurred.
+            	PrintStream errStrm = System.err;
+            	System.setErr(System.out);
                 err.printStackTrace();
+                System.setErr(errStrm);
             }
     }
     
@@ -269,7 +281,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param cls The class to make an instance of
      * @param x the x-coordinate of the position to add the actor
      * @param y the y-coordinate of the position to add the actor
-     * @param parameters
+     * @param parameters the parameters to pass to the constructor
      * @return a String defining a CMD_ADD command
      */
     public static String getAddCmd(Class<?> cls, int x, int y, Object... parameters) {
@@ -441,7 +453,13 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
                 Method method = mpa.getClass().getMethod(methodName, paramTypes);
                 method.invoke(mpa, parameters.toArray());
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException err) {
+            	// For some reason, System.err messages do not get printed in the greenfoot console, so
+            	// this prints the error to System.out to make sure it is visible.
+            	// Also, this makes it easier to see exactly when the error occurred.
+            	PrintStream errStrm = System.err;
+            	System.setErr(System.out);
                 err.printStackTrace();
+                System.setErr(errStrm);
             }
         }
     }
@@ -464,7 +482,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
 	 * the given actorId from the world.
      * @param actorId the id of the actor to remove from the world
      */
-    protected void handleRemoveCmd(String actorId) {
+    private void handleRemoveCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) getWorld().removeObject(mpa);
     }
