@@ -251,7 +251,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param y the y-coordinate of the position to add the actor
      * @param parameters parameters to pass to the constructor when creating the actor
      */
-    private void handleAddCmd(String className, int x, int y, List<String> parameters) {
+    protected void handleAddCmd(String className, int x, int y, List<String> parameters) {
         // Create an instance of the class given by the className and add it to the world at the given x, y
             try {
             	// executing Class.forName(className) without specifying the loader doesn't find the class
@@ -297,7 +297,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param x the x-coordinate of the actor's new location
      * @param y the y-coordinate of the actor's new location
      */
-    private void handleMoveCmd(String actorId, int x, int y) {
+    protected void handleMoveCmd(String actorId, int x, int y) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setLocation(x, y);
     }
@@ -318,7 +318,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor to rotate
      * @param angle the angle to set the rotation of the actor to.
      */
-    private void handleRotateCmd(String actorId, int angle) {
+    protected void handleRotateCmd(String actorId, int angle) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null)  mpa.setRotation(angle);
     }
@@ -338,7 +338,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor to set the image of
      * @param fileName the name of the file containing the image data (should be located in the images folder)
      */
-    private void handleSetImageCmd(String actorId, String fileName) {
+    protected void handleSetImageCmd(String actorId, String fileName) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setImage(fileName);
     }
@@ -364,7 +364,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor whose image will have the its transparency set
      * @param transparency the transparency to set the image to
      */
-    private void handleTransparencyCmd(String actorId, int transparency) {
+    protected void handleTransparencyCmd(String actorId, int transparency) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null)  mpa.getImage().setTransparency(transparency);
     }
@@ -385,7 +385,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
 	 * of the actor with the given actorId horizontally.
      * @param actorId the id of the actor whose image will be mirrored
      */
-    private void handleMirrorHorizontallyCmd(String actorId) {
+    protected void handleMirrorHorizontallyCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.getImage().mirrorHorizontally();
     }
@@ -404,7 +404,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
 	 * of the actor with the given actorId vertically.
      * @param actorId the id of the actor whose image will be mirrored
      */
-    private void handleMirrorVerticallyCmd(String actorId) {
+    protected void handleMirrorVerticallyCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.getImage().mirrorVertically();
     }
@@ -425,7 +425,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param width the width after scaling
      * @param height the height after scaling
      */
-    private void handleScaleCmd(String actorId, int width, int height) {
+    protected void handleScaleCmd(String actorId, int width, int height) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null)  mpa.getImage().scale(width, height);
     }
@@ -448,7 +448,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
      * @param methodName the name of the method to call
      * @param parameters the parameters to pass to the method
      */
-    private void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
+    protected void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
             Class<?>[] paramTypes = new Class<?>[parameters.size()];
@@ -486,7 +486,7 @@ public abstract class GreenfootEventHandler implements ClientEventHandler {
 	 * the given actorId from the world.
      * @param actorId the id of the actor to remove from the world
      */
-    private void handleRemoveCmd(String actorId) {
+    protected void handleRemoveCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) getWorld().removeObject(mpa);
     }
