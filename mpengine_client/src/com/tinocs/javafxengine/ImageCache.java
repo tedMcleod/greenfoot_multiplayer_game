@@ -1,14 +1,18 @@
 package com.tinocs.javafxengine;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javafx.scene.image.Image;
 
+/**
+ * A class for caching images in javafx. The cache is thread safe.
+ * @author Ted_McLeod
+ *
+ */
 public class ImageCache {
 	
-	private static Map<String, Image> imgCache = new HashMap<>();
-
+	private static final ConcurrentHashMap<String, Image> IMG_CACHE = new ConcurrentHashMap<>();
+	
 	/**
      * Return the image at the given url.
 	 * If the url is not already associated with a cached image, create the image and cache it.
@@ -19,11 +23,11 @@ public class ImageCache {
      * @return the image at the given url.
      */
     public static Image getImage(String url) {
-    	if (!imgCache.containsKey(url)) imgCache.put(url, new Image(url));
-    	return imgCache.get(url);
+    	if (!IMG_CACHE.containsKey(url)) IMG_CACHE.put(url, new Image(url));
+    	return IMG_CACHE.get(url);
     }
     
     public static void clearCache() {
-    	imgCache = new HashMap<>();
+    	IMG_CACHE.clear();
     }
 }
