@@ -223,7 +223,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param y the y position to add the actor
      * @param parameters the remaining parameters to pass to the constructor (must be Strings)
      */
-    private void handleAddCmd(String className, double x, double y, List<String> parameters) {
+    protected void handleAddCmd(String className, double x, double y, List<String> parameters) {
     	try {
             Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
             Class<?>[] paramTypes = new Class<?>[parameters.size()];
@@ -262,7 +262,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param x the x coordinate
      * @param y the y coordinate
      */
-    private void handleMoveCmd(String actorId, double x, double y) {
+    protected void handleMoveCmd(String actorId, double x, double y) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setX(x);
@@ -277,7 +277,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param y the y-coordinate of the actor's new location
      * @return a string defining a {@link #CMD_MOVE} command
      */
-    public static String getMoveCmd(String actorId, int x, int y) {
+    public static String getMoveCmd(String actorId, double x, double y) {
     	return Client.getCmdStr(CMD_MOVE, actorId, x, y);
     }
     
@@ -286,7 +286,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param angle the angle to set the rotation to
      */
-    private void handleRotateCmd(String actorId, double angle) {
+    protected void handleRotateCmd(String actorId, double angle) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setRotate(angle);
     }
@@ -297,7 +297,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param angle the angle to set the rotation of the actor to
      * @return a string defining a {@link #CMD_ROTATE} command
      */
-    public static String getRotateCmd(String actorId, int angle) {
+    public static String getRotateCmd(String actorId, double angle) {
     	return Client.getCmdStr(CMD_ROTATE, actorId, angle);
     }
     
@@ -308,7 +308,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param url the path to the image resource.
      */
-    private void handleSetImageCmd(String actorId, String url) {
+    protected void handleSetImageCmd(String actorId, String url) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) mpa.setImage(url);
     }
@@ -334,7 +334,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param opacity the opacity
      */
-    private void handleSetOpacityCmd(String actorId, double opacity) {
+    protected void handleSetOpacityCmd(String actorId, double opacity) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null)  mpa.setOpacity(opacity);
     }
@@ -348,7 +348,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param opacity the opacity to set the image to
      * @return a string defining a {@link #CMD_OPACITY} command
      */
-    public static String getOpacityCmd(String actorId, int opacity) {
+    public static String getOpacityCmd(String actorId, double opacity) {
     	return Client.getCmdStr(CMD_OPACITY, actorId, opacity);
     }
     
@@ -358,7 +358,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param scaleX the horizontal scale factor 
      */
-    private void handleScaleXCmd(String actorId, double scaleX) {
+    protected void handleScaleXCmd(String actorId, double scaleX) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setScaleX(scaleX);
@@ -381,7 +381,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param actorId the id of the actor
      * @param scaleY the vertical scale factor
      */
-    private void handleScaleYCmd(String actorId, double scaleY) {
+    protected void handleScaleYCmd(String actorId, double scaleY) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
         	mpa.setScaleY(scaleY);
@@ -406,7 +406,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
      * @param methodName the name of the method to be called
      * @param parameters the parameters to pass to the method
      */
-    private void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
+    protected void handleMethodCmd(String actorId, String methodName, List<String> parameters) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) {
             Class<?>[] paramTypes = new Class<?>[parameters.size()];
@@ -438,7 +438,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
 	 * the given actorId from the world.
      * @param actorId the id of the actor to remove from the world
      */
-    private void handleRemoveCmd(String actorId) {
+    protected void handleRemoveCmd(String actorId) {
         MPActor mpa = getWorld().getMPActor(actorId);
         if (mpa != null) getWorld().remove(mpa);
     }
