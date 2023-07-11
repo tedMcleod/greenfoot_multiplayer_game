@@ -78,12 +78,12 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     public static final String CMD_OPACITY = "OPACITY";
     
     /**<p>Command to set the horizontal scale factor of an actor to the given scaleX </p>
-	 * The command will be in the form: senderId SCALE actorId scaleX
+	 * The command will be in the form: senderId SCALEX actorId scaleX
 	 */
     public static final String CMD_SCALE_X = "SCALEX";
     
     /**<p>Command to set the vertical scale factor of an actor to the given scaleY </p>
-	 * The command will be in the form: senderId SCALE actorId scaleY
+	 * The command will be in the form: senderId SCALEY actorId scaleY
 	 */
     public static final String CMD_SCALE_Y = "SCALEY";
     
@@ -94,7 +94,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     public static final String CMD_METHOD = "METHOD";
     
     /**<p>Command to remove an actor.</p>
-	 * The command will be in the form: senderId DESTROY actorId
+	 * The command will be in the form: senderId REMOVE actorId
 	 */
     public static final String CMD_REMOVE = "REMOVE";
     
@@ -117,15 +117,19 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
         }
     }
     
+    /**
+     * When another client joins, if both this client and the other client are not in a room or
+     * the other client is in the same room as this client, then tell the other actor to add the
+     * other class of each {@link LocalActor} in the same position with the relevant constructor parameters
+     * determined by {@link LocalActor#getConstructorParameters()}.
+     */
     @Override
     public void handleOtherClientJoined(String clientId, Client client) {
-        // This will respond to the sender client with messages saying to add the
-        // corresponding classes that represent each LocalActor this client controls
         String myRoomId = client.getCurrentRoomId();
         String otherRoomId = client.getIdOfRoomContainingClient(clientId);
         if (otherRoomId == null && myRoomId == null || (myRoomId != null && myRoomId.equals(otherRoomId))) {
             for (LocalActor la : getWorld().getObjects(LocalActor.class)) {
-                String msg = JavafxEngineEventHandler.CMD_ADD + " " + la.getOtherClass().getName() + " " + la.getActorId() + " " + la.getX() + " " + la.getY();
+                String msg = getAddCmd(la.getOtherClass(), la.getX(), la.getY(), la.getConstructorParameters());
                 client.sendMessage(msg, clientId);
             }
         }
@@ -150,9 +154,9 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
     public void handleCommand(String command, Client client) {
         Scanner scan = new Scanner(command);
         // The first token is always the id of the client who sent the message
-        String senderId = scan.next();
+        scan.next(); // none of these commands need the senderId
         
-        // The second token is the command (ADD, MOVE, ROT, DESTROY...etc)
+        // The second token is the command (ADD, MOVE, ROT, REMOVE...etc)
         String cmd = scan.next();
         
         if (cmd.equals(CMD_ADD)) {
@@ -203,7 +207,7 @@ public abstract class JavafxEngineEventHandler implements ClientEventHandler {
             while (scan.hasNext()) params.add(scan.next());
             handleMethodCmd(actorId, methodName, params);
         } else if (cmd.equals(CMD_REMOVE)) {
-            // The command will be in the form: senderId DESTROY actorId
+            // The command will be in the form: senderId REMOVE actorId
             String actorId = scan.next();
             handleRemoveCmd(actorId);
         }
