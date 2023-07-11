@@ -1,7 +1,6 @@
 package com.tinocs.mp.javafxengine;
 import java.util.UUID;
 
-import com.tinocs.javafxengine.World;
 import com.tinocs.mp.client.Client;
 
 /**
@@ -49,27 +48,27 @@ public abstract class LocalActor extends MPActor {
         super(UUID.randomUUID().toString(), client.getId());
         this.otherClass = otherClass;
         xProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_MOVE + " " + getActorId() + " " + nv + " " + getY());
+        	broadcastMessage(JavafxEngineEventHandler.getMoveCmd(getActorId(), nv.doubleValue(), getY()));
         });
         
         yProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_MOVE + " " + getActorId() + " " + getX() + " " + nv);
+        	broadcastMessage(JavafxEngineEventHandler.getMoveCmd(getActorId(), getX(), nv.doubleValue()));
         });
         
         rotateProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_ROTATE + " " + getActorId() + " " + nv);
+        	broadcastMessage(JavafxEngineEventHandler.getRotateCmd(getActorId(), nv.doubleValue()));
         });
         
         opacityProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_OPACITY + " " + getActorId() + " " + nv);
+        	broadcastMessage(JavafxEngineEventHandler.getOpacityCmd(getActorId(), nv.doubleValue()));
         });
         
         scaleXProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_SCALE_X + " " + getActorId() + " " + nv);
+        	broadcastMessage(JavafxEngineEventHandler.getScaleXCmd(getActorId(), nv.doubleValue()));
         });
         
         scaleYProperty().addListener((obj, ov, nv) -> {
-        	broadcastMessage(JavafxEngineEventHandler.CMD_SCALE_Y + " " + getActorId() + " " + nv);
+        	broadcastMessage(JavafxEngineEventHandler.getScaleYCmd(getActorId(), nv.doubleValue()));
         });
     }
     
@@ -91,11 +90,15 @@ public abstract class LocalActor extends MPActor {
     }
     
     /**
-     * Override this method to add to the String representing the parameters that should be passed to the constructor
-     * of the corresponding MPActor on other clients (see {@link #getOtherClass()}). By default this method returns
-	 * {actorId, clientId}, where actorId is the id of this actor and the clientId is the id of the client of the MPWorld
-	 * this actor is in. If this actor is not in an MPWorld or if the client is null, then clientId will be null, but that
-	 * should be harmless since in that case, the message this string is part of will not be broadcast.
+     * <p>Override this method to add parameters that should be passed to the constructor of the corresponding MPActor
+     * on other clients (see {@link #getOtherClass()}). By default this method returns {actorId, clientId}, where actorId
+	 * is the id of this actor and the clientId is the id of the client of the MPWorld this actor is in.
+	 * If this actor is not in an MPWorld or if the client is null, then clientId will be null, but that
+	 * should be harmless since in that case, the message this string is part of will not be broadcast.</p>
+	 * 
+	 * <p>Make sure the parameter objects are either strings or are objects for which the toString() method returns the desired
+     * String as they will ultimately be converted to strings for the broadcast message. Primitives are fine because they will
+     * be autoboxed to an instance of the corresponding wrapper class and later converted to a string representation.</p>
 	 * 
      * @return an array of parameters that should be passed to the constructor of the corresponding MPActor on other clients
      */
@@ -127,7 +130,7 @@ public abstract class LocalActor extends MPActor {
     @Override
     public void setImage(String url) {
     	super.setImage(url);
-        broadcastMessage(JavafxEngineEventHandler.CMD_IMAGE + " " + getActorId() + " " + url);
+        broadcastMessage(JavafxEngineEventHandler.getImageCmd(getActorId(), url));
     }
     
 }
